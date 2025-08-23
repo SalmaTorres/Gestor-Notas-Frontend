@@ -1,9 +1,4 @@
 <div class="main-container">
-  <!-- Aquí se muestra el Sidebar -->
-  <app-sidebar></app-sidebar>
-
-  <!-- Contenido principal (ya debería estar aquí por defecto) -->
-  <div class="content">
-    <!-- Resto de tu contenido principal -->
-  </div>
+  <app-sidebar (noteCreated)="onNoteCreated($event)"></app-sidebar>
+  <app-board [notes]="createdNotes"></app-board>
 </div>

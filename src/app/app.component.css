@@ -1,0 +1,13 @@
+.main-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+app-sidebar {
+  z-index: 1;
+}
+
+app-board {
+  flex: 1;
+}
