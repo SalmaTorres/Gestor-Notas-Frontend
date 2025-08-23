@@ -1,0 +1,59 @@
+.sidebar {
+  width: 300px;
+  background-color: #f4f4f9;
+  padding: 20px;
+  position: fixed;
+  height: 100%;
+  top: 0;
+  left: 0;
+  box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  font-family: Arial;
+}
+
+.sidebar p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 20px;
+  font-family: Arial;
+}
+
+.note-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+
+.note {
+  padding: 15px;
+  width: 90px;
+  height: 90px;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2); 
+  transform: rotate(var(--rotate-angle));
+}
+
+.note:nth-child(1), .note:nth-child(3), .note:nth-child(5)  {
+  --rotate-angle: -5deg;
+}
+.note:nth-child(2), .note:nth-child(4), .note:nth-child(6) {
+  --rotate-angle: 7deg;
+}
+
+.note:hover {
+  transform: scale(1.05) rotate(var(--rotate-angle));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}

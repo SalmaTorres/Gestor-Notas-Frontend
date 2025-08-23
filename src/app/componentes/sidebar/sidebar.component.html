@@ -1,0 +1,9 @@
+<div class="sidebar">
+  <h2>Agrega una nota</h2>
+  <p>Haz clic en una nota para agregarla a tu tablero.</p>
+  <div class="note-container">
+    <div *ngFor="let note of notes" class="note" [ngStyle]="{'background-color': note.color}">
+      <p>{{ note.text }}</p>
+    </div>
+  </div>
+</div>
