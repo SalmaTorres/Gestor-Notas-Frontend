@@ -1,6 +1,6 @@
 .board {
   height: 100%;
-  background-color: #2a629a;
+  background-color: #dfe0e0;
 }
 
 .note {
@@ -14,7 +14,7 @@
 .note textarea {
   font-family: Arial;
   width: 100%;
-  height: 100%;
+  height: 80%;
   border: none;
   background: transparent;
   resize: none;
@@ -23,4 +23,9 @@
 
 .note textarea::placeholder {
   color: #333;
+}
+
+#save{
+  font-family: Arial;
+  border-radius: 5px;
 }

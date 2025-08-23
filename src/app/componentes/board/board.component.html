@@ -7,5 +7,6 @@
          'left.px': 400+note.left
        }">
     <textarea placeholder="Escribe algo..."></textarea>
+    <button id="save" *ngIf="!note.saved" (click)="saveNote(note)">Guardar</button>
   </div>
 </div>

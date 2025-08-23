@@ -8,6 +8,7 @@ interface Note {
   top: number;
   left: number;
   text: string;
+  saved?: boolean;
 }
 
 @Component({
