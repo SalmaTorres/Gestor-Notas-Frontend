@@ -7,7 +7,7 @@ interface Note {
   color: string;
   top: number;
   left: number;
-  text: string;
+  content: string;
   saved?: boolean;
 }
 
@@ -29,7 +29,7 @@ export class AppComponent {
       color,
       top,
       left,
-      text: ''
+      content: ''
     });
   }
 }

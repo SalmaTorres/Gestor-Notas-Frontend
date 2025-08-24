@@ -2,12 +2,6 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-interface Note {
-  color: string;
-  top: number;
-  left: number;
-}
-
 @Component({
   selector: 'app-sidebar',
   imports: [CommonModule, FormsModule],
