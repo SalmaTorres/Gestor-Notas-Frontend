@@ -1,0 +1,31 @@
+.board {
+  height: 100%;
+  background-color: #dfe0e0;
+}
+
+.note {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  padding: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.note textarea {
+  font-family: Arial;
+  width: 100%;
+  height: 80%;
+  border: none;
+  background: transparent;
+  resize: none;
+  outline: none;
+}
+
+.note textarea::placeholder {
+  color: #333;
+}
+
+#save{
+  font-family: Arial;
+  border-radius: 5px;
+}

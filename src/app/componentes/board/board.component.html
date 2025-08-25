@@ -1,0 +1,12 @@
+<div class="board">
+  <div *ngFor="let note of notes"
+       class="note"
+       [ngStyle]="{
+         'background-color': note.color,
+         'top.px': 10+note.top,
+         'left.px': 400+note.left
+       }">
+    <textarea placeholder="Escribe algo..."  [(ngModel)]="note.content"></textarea>
+    <button id="save" *ngIf="!isNoteSaved(note)" (click)="saveNote(note)">Guardar</button>
+  </div>
+</div>
