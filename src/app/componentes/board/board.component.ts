@@ -46,4 +46,13 @@ export class BoardComponent {
   isNoteSaved(note: Note): boolean {
     return !!note['saved'];
   }
+  deleteNote(note: Note) {
+  if (!note.idNote) {
+    const index = this.notes.indexOf(note);
+    if (index !== -1) {
+      this.notes.splice(index, 1);
+    }
+    return;
+    }
+  }
 }
