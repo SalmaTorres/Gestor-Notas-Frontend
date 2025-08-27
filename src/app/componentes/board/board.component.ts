@@ -48,11 +48,10 @@ export class BoardComponent {
   }
   deleteNote(note: Note) {
   if (!note.idNote) {
-    const index = this.notes.indexOf(note);
-    if (index !== -1) {
-      this.notes.splice(index, 1);
-    }
+    // Nota no guardada todavía solo quitarla del arreglo notes
+    this.notes = this.notes.filter(n => n !== note);
     return;
-    }
+    } 
   }
+  
 }
