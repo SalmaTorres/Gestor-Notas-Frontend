@@ -23,7 +23,7 @@ export class NoteService {
     return this.http.get<Note[]>(this.apiUrl);
   }
   deleteNote(id: string): Observable<any> {
-  return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 
 }

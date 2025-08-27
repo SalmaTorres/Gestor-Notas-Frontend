@@ -47,6 +47,7 @@ export class BoardComponent {
     return !!note['saved'];
   }
   deleteNote(note: Note) {
+    //Nota no guardada todavía solo se quita del arreglo notes
   if (!note.idNote) {
     this.notes = this.notes.filter(n => n !== note);
     return;

@@ -69,4 +69,11 @@ describe('BoardComponent', () => {
     const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola' };
     expect(component.isNoteSaved(note)).toBeFalse();
   });
+  it('should remove a note from notes array if it has no idNote', () => {
+  const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Nota temporal' };
+  component.notes = [note]; // simulamos que la nota está en el array
+  component.deleteNote(note);
+  expect(component.notes.length).toBe(0);
+  });
+
 });
