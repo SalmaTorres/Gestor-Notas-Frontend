@@ -84,4 +84,28 @@ export class BoardComponent {
   isNoteSaved(note: Note): boolean {
     return !!note['saved'];
   }
+  deleteNote(note: Note) {
+    //Nota no guardada todavía solo se quita del arreglo notes
+  if (!note.idNote) {
+    this.notes = this.notes.filter(n => n !== note);
+    return;
+  }
+
+  this.noteService.deleteNote(note.idNote!).subscribe({
+    next: (response: any) => {
+      if (response.success) {
+        this.savedNotes = this.savedNotes.filter(n => n.idNote !== note.idNote);
+        this.notes = this.notes.filter(n => n.idNote !== note.idNote);
+
+        alert('Nota eliminada correctamente');
+      } else {
+        alert('Error: ' + response.message);
+      }
+    },
+    error: (err: any) => {
+      alert('Error en la eliminación: ' + err.message);
+    }
+  });
+}
+
 }
