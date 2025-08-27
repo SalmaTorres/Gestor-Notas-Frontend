@@ -48,10 +48,25 @@ export class BoardComponent {
   }
   deleteNote(note: Note) {
   if (!note.idNote) {
-    // Nota no guardada todavía solo quitarla del arreglo notes
     this.notes = this.notes.filter(n => n !== note);
     return;
-    } 
   }
-  
+
+  this.noteService.deleteNote(note.idNote!).subscribe({
+    next: (response: any) => {
+      if (response.success) {
+        this.savedNotes = this.savedNotes.filter(n => n.idNote !== note.idNote);
+        this.notes = this.notes.filter(n => n.idNote !== note.idNote);
+
+        alert('Nota eliminada correctamente');
+      } else {
+        alert('Error: ' + response.message);
+      }
+    },
+    error: (err: any) => {
+      alert('Error en la eliminación: ' + err.message);
+    }
+  });
+}
+
 }
