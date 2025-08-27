@@ -81,6 +81,10 @@ export class BoardComponent {
     });
   }
 
+  updateNote(note: Note){
+
+  }
+
   isNoteSaved(note: Note): boolean {
     return !!note['saved'];
   }
