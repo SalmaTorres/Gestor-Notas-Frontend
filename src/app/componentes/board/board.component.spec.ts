@@ -12,7 +12,7 @@ describe('BoardComponent', () => {
   let noteServiceSpy: jasmine.SpyObj<NoteService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('NoteService', ['createNote']);
+    const spy = jasmine.createSpyObj('NoteService', ['createNote', 'deleteNote']);
 
     await TestBed.configureTestingModule({
       imports: [],
@@ -70,10 +70,54 @@ describe('BoardComponent', () => {
     expect(component.isNoteSaved(note)).toBeFalse();
   });
   it('should remove a note from notes array if it has no idNote', () => {
-  const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Nota temporal' };
-  component.notes = [note]; // simulamos que la nota está en el array
-  component.deleteNote(note);
-  expect(component.notes.length).toBe(0);
+    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Nota temporal' };
+    component.notes = [note]; // simulamos que la nota está en el array
+    component.deleteNote(note);
+    expect(component.notes.length).toBe(0);
   });
+  it('should delete a note successfully', fakeAsync(() => {
+    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+    component.notes = [note];
+    component.savedNotes = [note];
+
+    noteServiceSpy.deleteNote.and.returnValue(of({ success: true }));
+
+    spyOn(window, 'alert');
+    component.deleteNote(note);
+    tick();
+
+    expect(component.notes.length).toBe(0);
+    expect(component.savedNotes.length).toBe(0);
+    expect(window.alert).toHaveBeenCalledWith('Nota eliminada correctamente');
+  }));
+
+  it('should handle delete note error response', fakeAsync(() => {
+    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+    component.notes = [note];
+    component.savedNotes = [note];
+
+    noteServiceSpy.deleteNote.and.returnValue(of({ success: false, message: 'No se pudo eliminar' }));
+
+    spyOn(window, 'alert');
+    component.deleteNote(note);
+    tick();
+
+    expect(component.notes.length).toBe(1); 
+    expect(window.alert).toHaveBeenCalledWith('Error: No se pudo eliminar');
+  }));
+
+  it('should handle delete note request failure', fakeAsync(() => {
+    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+    component.notes = [note];
+    component.savedNotes = [note];
+
+    noteServiceSpy.deleteNote.and.returnValue(throwError(() => new Error('Network error')));
+
+    spyOn(window, 'alert');
+    component.deleteNote(note);
+    tick();
+
+    expect(window.alert).toHaveBeenCalledWith('Error en la eliminación: Network error');
+  }));
 
 });
