@@ -12,7 +12,7 @@ describe('BoardComponent', () => {
   let noteServiceSpy: jasmine.SpyObj<NoteService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('NoteService', ['createNote']);
+    const spy = jasmine.createSpyObj('NoteService', ['createNote', 'getAllNotes']);
 
     await TestBed.configureTestingModule({
       imports: [],
@@ -69,4 +69,52 @@ describe('BoardComponent', () => {
     const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola' };
     expect(component.isNoteSaved(note)).toBeFalse();
   });
+
+   it('should map a RecoverNote to a Note correctly', () => {
+    const recoverNote = { idNote: '1', content: 'Test content' };
+    const index = 2;
+
+    const note: Note = component.mapNotes(recoverNote as any, index);
+
+    expect(note.idNote).toBe('1');
+    expect(note.content).toBe('Test content');
+
+    const validColors = ['#ffeb3b','#8bc34a','#fa719fff','#74c7e0ff','#fdb96cff','#ce74e0ff'];
+    expect(validColors).toContain(note.color);
+
+    expect(note.top).toBe(200 * (index % 3));
+    expect(note.left).toBe(200 * (index % 5));
+
+    expect(note.saved).toBeTrue();
+  });
+
+    it('should load notes when service returns data', fakeAsync(() => {
+    const mockResponse = [
+      { idNote: '1', content: 'Note 1' },
+      { idNote: '2', content: 'Note 2' },
+    ];
+
+    noteServiceSpy.getAllNotes.and.returnValue(of(mockResponse));
+
+    component.getNotes();
+    tick();
+
+    expect(component.savedNotes.length).toBe(2);
+    expect(component.notes.length).toBe(2);
+    expect(component.savedNotes[0].saved).toBeTrue();
+    expect(component.savedNotes[1].saved).toBeTrue();
+  }));
+
+  it('should show alert if service throws error', fakeAsync(() => {
+    spyOn(window, 'alert');
+    noteServiceSpy.getAllNotes.and.returnValue(throwError(() => new Error('Network error')));
+
+    component.getNotes();
+    tick();
+
+    expect(window.alert).toHaveBeenCalled();
+    expect(component.savedNotes.length).toBe(0);
+    expect(component.notes.length).toBe(0);
+  }));
 });
+
