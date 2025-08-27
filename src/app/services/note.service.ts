@@ -22,8 +22,12 @@ export class NoteService {
   getAllNotes(): Observable<Note[]> {
     return this.http.get<Note[]>(this.apiUrl);
   }
+
+  updateNote(id: string, note: Note): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, note);
+  }
+  
   deleteNote(id: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
-
 }

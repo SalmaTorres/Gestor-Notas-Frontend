@@ -81,6 +81,26 @@ export class BoardComponent {
     });
   }
 
+  updateNote(note: Note){
+    if(note.idNote){
+      const { idNote, content } = note;
+      const cleanNote: RecoverNote = { content };
+      this.noteService.updateNote(idNote, cleanNote).subscribe({
+        next:(response) => {
+            if(response){
+              alert("Nota actualizada correctamente");
+            }
+            else{
+              alert("Error al actualizar la nota");
+            }
+        },
+      })
+    }
+    else{
+      alert("Esta nota no existe");
+    }
+  }
+
   isNoteSaved(note: Note): boolean {
     return !!note['saved'];
   }
