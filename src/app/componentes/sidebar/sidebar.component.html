@@ -1,9 +1,13 @@
 <div class="sidebar">
   <h2>Agrega una nota</h2>
-  <p>Haz clic en una nota para agregarla a tu tablero.</p>
-  <div class="note-container">
-    <div *ngFor="let note of notes" class="note" [ngStyle]="{'background-color': note.color}" (click)="createNote(note)">
-      <p>Escribe algo...</p>
-    </div>
-  </div>
+  <p>Haz clic en el botón para agregar notas a tu tablero.</p>
+  <button type="button" (click)="openModal()">+</button>
+</div>
+<div class="chips">
+    <span *ngFor="let c of categories"
+          class="chip"
+          [style.backgroundColor]="c.color"
+          [title]="c.name">
+      {{ c.name }}
+    </span>
 </div>

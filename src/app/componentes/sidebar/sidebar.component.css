@@ -22,6 +22,18 @@
   margin-bottom: 20px;
   font-family: Arial;
 }
+.header { 
+  display:flex; 
+  justify-content:space-between; 
+  align-items:center; 
+  margin-bottom:.5rem; 
+}
+.header button { 
+  border:1px solid #ddd; 
+  background:#fafafa; 
+  cursor:pointer;
+  padding:.25rem .5rem; 
+}
 
 .note-container {
   display: grid;
@@ -56,4 +68,14 @@
 .note:hover {
   transform: scale(1.05) rotate(var(--rotate-angle));
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+.chips { 
+  display:flex; 
+  gap:.5rem; 
+  flex-wrap:wrap; 
+}
+.chip { 
+  color:#222; 
+  padding:.25rem .5rem; 
+  border-radius:12px; 
 }
