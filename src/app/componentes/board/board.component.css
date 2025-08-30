@@ -6,6 +6,7 @@
 }
 
 .note {
+  position:fixed;
   width: 150px;
   height: 150px;
   padding: 8px;
