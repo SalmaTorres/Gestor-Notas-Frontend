@@ -1,7 +1,8 @@
 <div class="sidebar">
   <h2>Agrega una nota</h2>
   <p>Haz clic en el botón para agregar notas a tu tablero.</p>
-  <button type="button" (click)="openModal()">+</button>
+  <button type="button" data-testid="add-category" (click)="openModal()">+</button>
+
 </div>
 <div class="chips">
     <span *ngFor="let c of categories"
@@ -11,3 +12,25 @@
       {{ c.name }}
     </span>
 </div>
+<div class="backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
+<div class="modal" *ngIf="modalOpen">
+  <h3>Nueva Categoria</h3>
+
+  <label>Nombre</label>
+  <input type="text" [(ngModel)]="form.name" placeholder="Nombre categoria" />
+
+  <label>Selecciona el color</label>
+  <div class="palette">
+    <button type="button" *ngFor="let c of palette"
+            class="swatch" [style.background]="c"
+            (click)="form.color = c"></button>
+  </div>
+
+  <input type="text" [(ngModel)]="form.color" placeholder="#RRGGBB" (blur)="normalizeHex()" />
+  <small *ngIf="!isValidHex(form.color)">Use HEX format #RRGGBB</small>
+
+  <div class="actions">
+    <button type="button" [disabled]="!canSave()" (click)="saveCategory()">Guardar</button>
+  </div>
+</div>
+
