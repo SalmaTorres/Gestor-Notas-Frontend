@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NoteService } from '../../services/note.service';
 import { FormsModule } from '@angular/forms';
+import { CdkDrag } from '@angular/cdk/drag-drop';
 
 export interface Note {
   idNote?: string;
@@ -19,7 +20,7 @@ export interface RecoverNote {
 
 @Component({
   selector: 'app-board',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CdkDrag],
   templateUrl: './board.component.html',
   styleUrl: './board.component.css'
 })
