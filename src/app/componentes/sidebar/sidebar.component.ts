@@ -1,12 +1,7 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Category {
-  id: string;
-  name: string;
-  color: string; 
-}
+import { NoteService, Category } from '../../services/note.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -15,7 +10,7 @@ interface Category {
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
 
   categories: Category[] = [];
 
@@ -25,6 +20,18 @@ export class SidebarComponent {
   form = { name: '', color: '#FFD966' };
 
   palette = ['#FFD966','#F4B183','#F8CBAD','#C5E0B4','#A9D18E','#9DC3E6','#BDD7EE','#D9D2E9','#F4B6C2','#FFE699'];
+
+  constructor(private noteService: NoteService) {}
+
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.noteService.getAllCategories().subscribe(categories => {
+      this.categories = categories;
+    });
+  }
 
   openModal(): void { this.modalOpen = true; }
   closeModal(): void { this.modalOpen = false; }
@@ -46,13 +53,22 @@ export class SidebarComponent {
 
   saveCategory(): void {
     if (!this.canSave()) return;
-    const newCat: Category = {
-      id: crypto.randomUUID(),
-      name: this.form.name.trim(),
+
+    const newCategory: Category = {
+      categoryId: this.form.name.trim(),
       color: this.form.color
     };
-    this.categories.unshift(newCat); 
-    this.form = { name: '', color: '#FFD966' };
-    this.modalOpen = false;
+
+    this.noteService.createCategory(newCategory).subscribe({
+      next: (savedCategory) => {
+        this.categories.unshift(savedCategory);
+        this.form = { name: '', color: '#FFD966' };
+        this.modalOpen = false;
+      },
+      error: (err) => {
+        console.error('Error saving category:', err);
+        alert(err.error.message || 'Could not save the category.');
+      }
+    });
   }
 }

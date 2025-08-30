@@ -8,8 +8,8 @@
     <span *ngFor="let c of categories"
           class="chip"
           [style.backgroundColor]="c.color"
-          [title]="c.name">
-      {{ c.name }}
+          [title]="c.categoryId">
+      {{ c.categoryId }}
     </span>
 </div>
 <div class="backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
