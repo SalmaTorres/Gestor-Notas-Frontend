@@ -1,5 +1,5 @@
-<div class="board">
-  <div *ngFor="let note of notes" cdkDrag
+<div class="board" #board>
+  <div *ngFor="let note of notes" cdkDrag (cdkDragEnded)="onDragEnd($event, board)"
        class="note"
        [ngStyle]="{
          'background-color': note.color,

@@ -129,4 +129,23 @@ export class BoardComponent {
   });
 }
 
+onDragEnd(event: any, board: HTMLElement) {
+  const { x, y } = event.source.getFreeDragPosition();
+  const note = event.source.element.nativeElement;
+  const boardRect = board.getBoundingClientRect();
+  const noteRect = note.getBoundingClientRect();
+
+  // Verifica si salió del tablero
+  const isOut =
+    noteRect.left < boardRect.left ||
+    noteRect.right > boardRect.right ||
+    noteRect.top < boardRect.top ||
+    noteRect.bottom > boardRect.bottom;
+
+  if (isOut) {
+    // Resetea a posición inicial
+    event.source.reset();
+  }
+}
+
 }
