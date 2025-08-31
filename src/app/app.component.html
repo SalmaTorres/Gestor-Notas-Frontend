@@ -1,4 +1,24 @@
 <div class="main-container">
   <app-sidebar (noteCreated)="onNoteCreated($event)"></app-sidebar>
   <app-board [notes]="createdNotes"></app-board>
+
+  <div class="modal-overlay" *ngIf="showNoteModal" (click)="onModalClosed()">
+    <div class="note-modal" [style.background-color]="currentNote?.color" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ selectedCategory?.categoryId }}</h3>
+        <button class="close-btn" (click)="onModalClosed()">&times;</button>
+      </div>
+      
+      <textarea 
+        class="note-textarea"
+        [(ngModel)]="currentNote!.content"
+        placeholder="Escribe algo...">
+      </textarea>
+      
+      <div class="modal-actions">
+        <button class="btn btn-cancel" (click)="onModalClosed()">Cancelar</button>
+        <button class="btn btn-save" (click)="saveCurrentNote()">Crear Nota</button>
+      </div>
+    </div>
+  </div>
 </div>
