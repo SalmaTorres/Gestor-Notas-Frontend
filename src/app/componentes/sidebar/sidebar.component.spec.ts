@@ -3,7 +3,6 @@ import { By } from '@angular/platform-browser';
 import { SidebarComponent } from './sidebar.component';
 import { NoteService, Category } from '../../services/note.service';
 import { of, throwError } from 'rxjs';
-import { importProvidersFrom } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('SidebarComponent', () => {
@@ -18,17 +17,22 @@ describe('SidebarComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [SidebarComponent, importProvidersFrom(HttpClientTestingModule)],
+      imports: [SidebarComponent, HttpClientTestingModule],
       providers: [{ provide: NoteService, useValue: spy }]
     }).compileComponents();
 
     noteServiceSpy = TestBed.inject(NoteService) as jasmine.SpyObj<NoteService>;
+
     // ngOnInit -> loadCategories()
     noteServiceSpy.getAllCategories.and.returnValue(of([]));
 
     fixture = TestBed.createComponent(SidebarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    document.body.classList.remove('modal-open');
   });
 
   it('should create the component', () => {
@@ -68,11 +72,11 @@ describe('SidebarComponent', () => {
     expect(component.isValidHex(component.form.color)).toBeTrue();
     expect(component.canSave()).toBeTrue();
 
-    component.form.color = '123456'; // sin '#'
+    component.form.color = '123456';
     expect(component.isValidHex(component.form.color)).toBeFalse();
     expect(component.canSave()).toBeFalse();
 
-    component.form.categoryId = ''; // vacío
+    component.form.categoryId = '';
     component.form.color = '#ABCDEF';
     expect(component.canSave()).toBeFalse();
   });
@@ -105,15 +109,16 @@ describe('SidebarComponent', () => {
   }));
 
   it('should set errorMsg when GET fails with 404', fakeAsync(() => {
+    // ⚠️ sin error.error.message, para forzar el mensaje genérico de 404
     noteServiceSpy.getAllCategories.and.returnValue(
-      throwError(() => ({ status: 404, error: { message: 'Not Found' } }))
+      throwError(() => ({ status: 404 }))
     );
 
     component.loadCategories();
     tick();
     fixture.detectChanges();
 
-    expect(component['errorMsg']).toContain('Ruta no encontrada');
+    expect((component as any).errorMsg).toContain('Ruta no encontrada');
   }));
 
   it('should set errorMsg when GET fails with network error (status 0)', fakeAsync(() => {
@@ -125,7 +130,7 @@ describe('SidebarComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(component['errorMsg']).toContain('No se pudo conectar');
+    expect((component as any).errorMsg).toContain('No se pudo conectar');
   }));
 
   it('should save a category successfully, dedupe by categoryId, reset form, and close modal', fakeAsync(() => {
@@ -141,10 +146,10 @@ describe('SidebarComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(component['loading']).toBeFalse();
+    expect((component as any).loading).toBeFalse();
     expect(component.modalOpen).toBeFalse();
     expect(component.form.categoryId).toBe('');
-    expect(component.form.color).toBe('#FFD966'); 
+    expect(component.form.color).toBe('#FFD966');
     expect(component.categories.length).toBe(1);
     expect(component.categories[0]).toEqual({ categoryId: 'Ideas', color: '#FFD966' });
 
@@ -159,17 +164,18 @@ describe('SidebarComponent', () => {
     component.form.color = '#FFD966';
     fixture.detectChanges();
 
+    // ⚠️ sin error.error.message, para forzar el mensaje genérico de 404
     noteServiceSpy.createCategory.and.returnValue(
-      throwError(() => ({ status: 404, error: { message: 'No route' } }))
+      throwError(() => ({ status: 404 }))
     );
 
     component.saveCategory();
     tick();
     fixture.detectChanges();
 
-    expect(component['loading']).toBeFalse();
+    expect((component as any).loading).toBeFalse();
     expect(component.modalOpen).toBeTrue();
-    expect(component['errorMsg']).toContain('Ruta no encontrada');
+    expect((component as any).errorMsg).toContain('Ruta no encontrada');
     expect(component.categories.length).toBe(0);
   }));
 
@@ -187,9 +193,9 @@ describe('SidebarComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(component['loading']).toBeFalse();
+    expect((component as any).loading).toBeFalse();
     expect(component.modalOpen).toBeTrue();
-    expect(component['errorMsg']).toContain('No se pudo conectar');
+    expect((component as any).errorMsg).toContain('No se pudo conectar');
     expect(component.categories.length).toBe(0);
   }));
 });

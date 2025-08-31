@@ -26,7 +26,13 @@ export class NoteService {
   constructor(private http: HttpClient) {}
 
   // Note Methods
-  createNote(note: Note): Observable<any> {
+  createNote(note: Note | {
+    content: string;
+    color: string;      
+    category: string;   
+    positionX?: number;
+    positionY?: number;
+  }): Observable<any> {
     return this.http.post<any>(this.apiUrl, note);
   }
 

@@ -1,4 +1,3 @@
-/*
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { BoardComponent, Note } from './board.component';
 import { NoteService } from '../../services/note.service';
@@ -163,4 +162,3 @@ describe('BoardComponent', () => {
     expect(window.alert).toHaveBeenCalledWith('Esta nota no existe');
   });
 });
- */

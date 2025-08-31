@@ -14,7 +14,7 @@ export class SidebarComponent implements OnInit {
 
   categories: Category[] = [];
 
-  @Output() noteCreated = new EventEmitter<string>();
+  @Output() noteCreated = new EventEmitter<Category>();
 
   modalOpen = false;
   loading = false;
