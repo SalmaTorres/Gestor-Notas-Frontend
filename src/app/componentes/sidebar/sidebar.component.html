@@ -2,8 +2,11 @@
   <h2>Agrega una nota</h2>
   <p>Haz clic en el botón para agregar notas a tu tablero.</p>
   <button type="button" data-testid="add-category" (click)="openModal()">+</button>
+
+  <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
 </div>
 
+<!-- Post-its -->
 <div class="note-container">
   <span *ngFor="let c of categories"
         class="note"
@@ -13,35 +16,26 @@
   </span>
 </div>
 
+<!-- Modal -->
 <div class="backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
-
 <div class="modal" *ngIf="modalOpen">
   <h3>Nueva Categoría</h3>
 
   <label>Nombre </label>
-  <input type="text"
-         [(ngModel)]="form.categoryId"
-         placeholder="Ej: Trabajo" />
+  <input type="text" [(ngModel)]="form.categoryId" placeholder="Ej: Trabajo" />
 
   <label>Selecciona el color</label>
   <div class="palette">
-    <button type="button"
-            *ngFor="let c of palette"
-            class="swatch"
-            [style.background]="c"
+    <button type="button" *ngFor="let c of palette"
+            class="swatch" [style.background]="c"
             (click)="form.color = c"></button>
   </div>
 
-  <input type="text"
-         [(ngModel)]="form.color"
-         placeholder="#RRGGBB"
-         (blur)="normalizeHex()" />
+  <input type="text" [(ngModel)]="form.color" placeholder="#RRGGBB" (blur)="normalizeHex()" />
   <small *ngIf="!isValidHex(form.color)">Usa formato HEX #RRGGBB</small>
 
   <div class="actions">
-    <button type="button"
-            [disabled]="!canSave() || loading"
-            (click)="saveCategory()">
+    <button type="button" [disabled]="!canSave() || loading" (click)="saveCategory()">
       {{ loading ? 'Guardando...' : 'Guardar' }}
     </button>
     <button type="button" (click)="closeModal()">Cancelar</button>

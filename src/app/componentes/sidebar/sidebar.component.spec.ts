@@ -1,34 +1,34 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { SidebarComponent } from './sidebar.component';
-import { HttpClient } from '@angular/common/http';
+import { NoteService, Category } from '../../services/note.service';
 import { of, throwError } from 'rxjs';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { importProvidersFrom } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;
   let fixture: ComponentFixture<SidebarComponent>;
-  let httpSpy: jasmine.SpyObj<HttpClient>;
+  let noteServiceSpy: jasmine.SpyObj<NoteService>;
 
   beforeEach(async () => {
-    httpSpy = jasmine.createSpyObj<HttpClient>('HttpClient', ['get', 'post']);
+    const spy = jasmine.createSpyObj<NoteService>('NoteService', [
+      'getAllCategories',
+      'createCategory'
+    ]);
 
     await TestBed.configureTestingModule({
-      imports: [SidebarComponent],
-      providers: [
-        { provide: HttpClient, useValue: httpSpy },
-        provideHttpClientTesting(),
-        importProvidersFrom(HttpClientTestingModule),
-      ],
+      imports: [SidebarComponent, importProvidersFrom(HttpClientTestingModule)],
+      providers: [{ provide: NoteService, useValue: spy }]
     }).compileComponents();
 
-    httpSpy.get.and.returnValue(of([]));
+    noteServiceSpy = TestBed.inject(NoteService) as jasmine.SpyObj<NoteService>;
+    // ngOnInit -> loadCategories()
+    noteServiceSpy.getAllCategories.and.returnValue(of([]));
 
     fixture = TestBed.createComponent(SidebarComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges(); // ejecuta ngOnInit
+    fixture.detectChanges();
   });
 
   it('should create the component', () => {
@@ -68,11 +68,11 @@ describe('SidebarComponent', () => {
     expect(component.isValidHex(component.form.color)).toBeTrue();
     expect(component.canSave()).toBeTrue();
 
-    component.form.color = '123456'; 
+    component.form.color = '123456'; // sin '#'
     expect(component.isValidHex(component.form.color)).toBeFalse();
     expect(component.canSave()).toBeFalse();
 
-    component.form.categoryId = ''; 
+    component.form.categoryId = ''; // vacío
     component.form.color = '#ABCDEF';
     expect(component.canSave()).toBeFalse();
   });
@@ -88,13 +88,13 @@ describe('SidebarComponent', () => {
   });
 
   it('should fetch categories successfully and render post-its', fakeAsync(() => {
-    const mockCats = [
+    const mockCats: Category[] = [
       { categoryId: 'Trabajo', color: '#9DC3E6' },
-      { categoryId: 'Uni',     color: '#FFD966' },
+      { categoryId: 'Uni',     color: '#FFD966' }
     ];
-    httpSpy.get.and.returnValue(of(mockCats));
+    noteServiceSpy.getAllCategories.and.returnValue(of(mockCats));
 
-    component.fetchCategories();
+    component.loadCategories();
     tick();
     fixture.detectChanges();
 
@@ -105,11 +105,11 @@ describe('SidebarComponent', () => {
   }));
 
   it('should set errorMsg when GET fails with 404', fakeAsync(() => {
-    httpSpy.get.and.returnValue(
+    noteServiceSpy.getAllCategories.and.returnValue(
       throwError(() => ({ status: 404, error: { message: 'Not Found' } }))
     );
 
-    component.fetchCategories();
+    component.loadCategories();
     tick();
     fixture.detectChanges();
 
@@ -117,9 +117,11 @@ describe('SidebarComponent', () => {
   }));
 
   it('should set errorMsg when GET fails with network error (status 0)', fakeAsync(() => {
-    httpSpy.get.and.returnValue(throwError(() => ({ status: 0 })));
+    noteServiceSpy.getAllCategories.and.returnValue(
+      throwError(() => ({ status: 0 }))
+    );
 
-    component.fetchCategories();
+    component.loadCategories();
     tick();
     fixture.detectChanges();
 
@@ -133,7 +135,7 @@ describe('SidebarComponent', () => {
     component.form.color = '#FFD966';
     fixture.detectChanges();
 
-    httpSpy.post.and.returnValue(of({ categoryId: 'Ideas', color: '#FFD966' }));
+    noteServiceSpy.createCategory.and.returnValue(of({ categoryId: 'Ideas', color: '#FFD966' }));
 
     component.saveCategory();
     tick();
@@ -157,7 +159,7 @@ describe('SidebarComponent', () => {
     component.form.color = '#FFD966';
     fixture.detectChanges();
 
-    httpSpy.post.and.returnValue(
+    noteServiceSpy.createCategory.and.returnValue(
       throwError(() => ({ status: 404, error: { message: 'No route' } }))
     );
 
@@ -177,7 +179,7 @@ describe('SidebarComponent', () => {
     component.form.color = '#9DC3E6';
     fixture.detectChanges();
 
-    httpSpy.post.and.returnValue(
+    noteServiceSpy.createCategory.and.returnValue(
       throwError(() => ({ status: 0 }))
     );
 
@@ -186,7 +188,7 @@ describe('SidebarComponent', () => {
     fixture.detectChanges();
 
     expect(component['loading']).toBeFalse();
-    expect(component.modalOpen).toBeTrue(); 
+    expect(component.modalOpen).toBeTrue();
     expect(component['errorMsg']).toContain('No se pudo conectar');
     expect(component.categories.length).toBe(0);
   }));
