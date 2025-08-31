@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 export interface Note {
   idNote?: string;
   content: string;
+  positionX?: number;
+  positionY?: number;
 }
 
 @Injectable({

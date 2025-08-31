@@ -1,13 +1,117 @@
-.main-container {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-}
-
 app-sidebar {
   z-index: 1;
 }
 
-app-board {
+.main-container {
+  display: flex;
+  height: 100vh;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.note-modal {
+  width: 400px;
+  height: 300px;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.note-textarea {
   flex: 1;
+  border: none;
+  background: transparent;
+  resize: none;
+  outline: none;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+.note-textarea::placeholder {
+  color: #666;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 15px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.btn-cancel:hover {
+  background-color: #e0e0e0;
+}
+
+.btn-save {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #45a049;
 }

@@ -7,7 +7,6 @@
          'left.px': 400+note.left
        }">
     <textarea placeholder="Escribe algo..."  [(ngModel)]="note.content"></textarea>
-    <button id="save" *ngIf="!isNoteSaved(note)" (click)="saveNote(note)">Guardar</button>
     <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
     <button id="delete" (click)="deleteNote(note)">Eliminar</button>
   </div>
