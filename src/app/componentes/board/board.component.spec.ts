@@ -141,7 +141,6 @@ describe('BoardComponent', () => {
 
     expect(window.alert).toHaveBeenCalledWith('Nota actualizada correctamente');
   }));
-
   it('should show error if updateNote returns false', fakeAsync(() => {
     const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido' };
 
