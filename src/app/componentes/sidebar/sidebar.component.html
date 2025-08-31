@@ -1,21 +1,31 @@
 <div class="sidebar">
-  <h2>Agrega una nota</h2>
-  <p>Haz clic en el botón para agregar notas a tu tablero.</p>
-  <button type="button" data-testid="add-category" (click)="openModal()">+</button>
+    <div class="sidebar-header">
+    <h2>Agrega una nota</h2>
+    <p>Haz clic en el botón para agregar notas a tu tablero.</p>
+    <button
+      type="button"
+      class="add-btn"
+      data-testid="add-category"
+      (click)="openModal()"
+      title="Nueva categoría"
+    >+</button>
 
-  <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
-</div>
+  </div>
 
-<!-- Post-its -->
-<div class="note-container">
-  <span *ngFor="let c of categories"
+  <div class="sidebar-notes" role="list">
+      <div
+        *ngFor="let c of categories"
         class="note"
         [style.backgroundColor]="c.color"
-        [title]="c.categoryId">
-    {{ c.categoryId }}
-  </span>
+        [title]="c.categoryId"
+        (click)="noteCreated.emit(c.color)"   
+        role="listitem"
+        data-testid="cat-note"
+      >
+        <p>{{ c.categoryId }}</p>
+      </div>
+  </div>
 </div>
-
 <!-- Modal -->
 <div class="backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
 <div class="modal" *ngIf="modalOpen">

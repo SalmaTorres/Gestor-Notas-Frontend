@@ -20,7 +20,6 @@ export class SidebarComponent implements OnInit {
   loading = false;
   errorMsg = '';
 
-  // ⚠️ ahora usamos categoryId (no name)
   form: Category = { categoryId: '', color: '#FFD966' };
 
   palette = ['#FFD966','#F4B183','#F8CBAD','#C5E0B4','#A9D18E','#9DC3E6','#BDD7EE','#D9D2E9','#F4B6C2','#FFE699'];
@@ -68,7 +67,6 @@ export class SidebarComponent implements OnInit {
 
     this.noteService.createCategory(payload).subscribe({
       next: (saved) => {
-        // Insertar o reemplazar por categoryId (sin duplicar)
         this.categories = [saved, ...this.categories.filter(c => c.categoryId !== saved.categoryId)];
         this.form = { categoryId: '', color: '#FFD966' };
         this.modalOpen = false;
