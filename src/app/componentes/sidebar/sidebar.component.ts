@@ -1,40 +1,62 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NoteService, Category } from '../../services/note.service';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+
+interface Category {
+  categoryId: string;
+  color: string;
+}
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.css'
+  styleUrls: ['./sidebar.component.css'] 
 })
 export class SidebarComponent implements OnInit {
+
+  private readonly API = '';
 
   categories: Category[] = [];
 
   @Output() noteCreated = new EventEmitter<string>();
 
   modalOpen = false;
-  form = { name: '', color: '#FFD966' };
+  loading = false;
+  errorMsg = '';
+
+  form: Category = { categoryId: '', color: '#FFD966' };
 
   palette = ['#FFD966','#F4B183','#F8CBAD','#C5E0B4','#A9D18E','#9DC3E6','#BDD7EE','#D9D2E9','#F4B6C2','#FFE699'];
 
-  constructor(private noteService: NoteService) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.loadCategories();
+    this.fetchCategories();
   }
 
-  loadCategories(): void {
-    this.noteService.getAllCategories().subscribe(categories => {
-      this.categories = categories;
+  fetchCategories(): void {
+    this.errorMsg = '';
+    this.http.get<Category[]>(`${this.API}/api/categories`).subscribe({
+      next: (data) => { this.categories = data || []; },
+      error: (err) => {
+        console.error('GET /api/categories failed', err);
+        this.errorMsg = this.parseError(err);
+      }
     });
   }
 
-  openModal(): void { this.modalOpen = true; }
-  closeModal(): void { this.modalOpen = false; }
+  openModal(): void { 
+    this.modalOpen = true; 
+    document.body.classList.add('modal-open'); 
+  }
+  closeModal(): void { 
+    this.modalOpen = false; 
+    this.errorMsg = '';
+    document.body.classList.remove('modal-open'); 
+  }
 
   isValidHex(hex: string): boolean {
     return /^#([0-9a-fA-F]{6})$/.test((hex || '').trim());
@@ -48,27 +70,39 @@ export class SidebarComponent implements OnInit {
   }
 
   canSave(): boolean {
-    return this.form.name.trim().length > 0 && this.isValidHex(this.form.color);
+    return this.form.categoryId.trim().length > 0 && this.isValidHex(this.form.color);
   }
 
   saveCategory(): void {
-    if (!this.canSave()) return;
+    if (!this.canSave() || this.loading) return;
 
-    const newCategory: Category = {
-      categoryId: this.form.name.trim(),
+    this.loading = true;
+    this.errorMsg = '';
+
+    const payload: Category = {
+      categoryId: this.form.categoryId.trim(),
       color: this.form.color
     };
 
-    this.noteService.createCategory(newCategory).subscribe({
-      next: (savedCategory) => {
-        this.categories.unshift(savedCategory);
-        this.form = { name: '', color: '#FFD966' };
+    this.http.post<Category>(`${this.API}/api/categories`, payload).subscribe({
+      next: (saved) => {
+        this.categories = [saved, ...this.categories.filter(c => c.categoryId !== saved.categoryId)];
+        this.form = { categoryId: '', color: '#FFD966' };
         this.modalOpen = false;
+        this.loading = false;
       },
       error: (err) => {
-        console.error('Error saving category:', err);
-        alert(err.error.message || 'Could not save the category.');
+        console.error('POST /api/categories failed', err);
+        this.errorMsg = this.parseError(err);
+        this.loading = false;
       }
     });
+  }
+
+  private parseError(err: any): string {
+    if (err?.error?.message) return err.error.message; 
+    if (err?.status === 0)   return 'No se pudo conectar con el backend (¿está iniciado y el puerto es correcto?).';
+    if (err?.status === 404) return 'Ruta no encontrada (revisa el prefijo /api).';
+    return 'No se pudo completar la operación.';
   }
 }
