@@ -5,14 +5,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NoteService, Category } from './services/note.service';
 
-interface Note {
+interface BoardNote {
   idNote?: string;
   color: string;
   top: number;
   left: number;
   content: string;
   saved?: boolean;
-  categoryId?: string;
+  category?: Category; // para mostrar en UI si el back lo devuelve
 }
 
 @Component({
@@ -23,60 +23,71 @@ interface Note {
 })
 export class AppComponent {
   title = 'notas';
-  createdNotes: Note[] = [];
+  createdNotes: BoardNote[] = [];
+
   showNoteModal = false;
-  currentNote: Note | null = null;
+  currentNote: BoardNote | null = null;
+  selectedCategory: Category | null = null;
 
   constructor(private noteService: NoteService) {}
 
-  onNoteCreated(category: Category) {
+  // AHORA el sidebar emite Category completo
+  onNoteCreated(cat: Category) {
+    this.selectedCategory = cat;
     this.currentNote = {
-      color: category.color,
+      color: cat.color,
       top: 0,
       left: 0,
       content: '',
-      categoryId: category.categoryId
+      category: cat
     };
     this.showNoteModal = true;
   }
 
   saveCurrentNote() {
-    if (!this.currentNote) return;
+    if (!this.currentNote || !this.selectedCategory) return;
 
-    if (!this.currentNote.content || this.currentNote.content.trim() === '') {
+    const text = (this.currentNote.content || '').trim();
+    if (!text) {
       alert('El contenido de la nota no puede estar vacío');
       return;
     }
 
-    // mismas posiciones random que ya usabas
-    this.currentNote.top  = Math.floor(Math.random() * 500);
+    // genera posición
+    this.currentNote.top = Math.floor(Math.random() * 500);
     this.currentNote.left = 300 + Math.floor(Math.random() * 700);
 
-    // LO QUE TU BACKEND ESPERA: category (string) + color (string)
-    const noteToSave = {
-      content: this.currentNote.content.trim(),
-      color: this.currentNote.color,
-      category: this.currentNote.categoryId ?? '',
+    // ⬇️ Payload que el backend espera: category como OBJETO
+    const payload = {
+      content: text,
+      color: this.selectedCategory.color,                 // HEX
+      category: {                                         // OBJETO
+        categoryId: this.selectedCategory.categoryId,
+        color: this.selectedCategory.color
+      },
       positionX: this.currentNote.left,
       positionY: this.currentNote.top
     };
 
-    // casteo a any para no tocar el tipo del service ahora mismo
-    this.noteService.createNote(noteToSave as any).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.currentNote!.idNote = response.note.idNote;
+    this.noteService.createNote(payload as any).subscribe({
+      next: (res) => {
+        // Según tu código actual, esperas { success, note }
+        if (res?.success) {
+          // toma lo que devuelva el back (idNote y opcionalmente category)
+          this.currentNote!.idNote = res.note?.idNote;
           this.currentNote!.saved = true;
+          // si el back devuelve la categoría, úsala; si no, conserva la seleccionada
+          this.currentNote!.category = res.note?.category || this.selectedCategory;
 
           this.createdNotes.push({ ...this.currentNote! });
           alert('Nota guardada correctamente');
           this.closeModal();
         } else {
-          alert('Error: ' + response.message);
+          alert('Error: ' + (res?.message || 'No se pudo guardar'));
         }
       },
       error: (err) => {
-        alert('Error al guardar la nota: ' + err.message);
+        alert('Error al guardar la nota: ' + (err?.message || err));
       }
     });
   }
@@ -86,5 +97,6 @@ export class AppComponent {
   private closeModal() {
     this.showNoteModal = false;
     this.currentNote = null;
+    this.selectedCategory = null;
   }
 }

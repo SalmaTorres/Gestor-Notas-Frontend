@@ -5,7 +5,7 @@
   <div class="modal-overlay" *ngIf="showNoteModal" (click)="onModalClosed()">
     <div class="note-modal" [style.background-color]="currentNote?.color" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Nueva Nota</h3>
+        <h3>{{ selectedCategory?.categoryId }}</h3>
         <button class="close-btn" (click)="onModalClosed()">&times;</button>
       </div>
       
