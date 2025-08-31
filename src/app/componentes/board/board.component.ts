@@ -105,27 +105,33 @@ export class BoardComponent {
     return !!note['saved'];
   }
   deleteNote(note: Note) {
-    //Nota no guardada todavía solo se quita del arreglo notes
-  if (!note.idNote) {
-    this.notes = this.notes.filter(n => n !== note);
-    return;
-  }
-
-  this.noteService.deleteNote(note.idNote!).subscribe({
-    next: (response: any) => {
-      if (response.success) {
-        this.savedNotes = this.savedNotes.filter(n => n.idNote !== note.idNote);
-        this.notes = this.notes.filter(n => n.idNote !== note.idNote);
-
-        alert('Nota eliminada correctamente');
-      } else {
-        alert('Error: ' + response.message);
-      }
-    },
-    error: (err: any) => {
-      alert('Error en la eliminación: ' + err.message);
+    // Nota no guardada todavía → quitar del arreglo notes
+    if (!note.idNote) {
+      const index = this.notes.indexOf(note);
+      if (index !== -1) this.notes.splice(index, 1);
+      return;
     }
-  });
-}
+
+    this.noteService.deleteNote(note.idNote!).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          // eliminar de savedNotes
+          const savedIndex = this.savedNotes.findIndex(n => n.idNote === note.idNote);
+          if (savedIndex !== -1) this.savedNotes.splice(savedIndex, 1);
+
+          // eliminar de notes
+          const noteIndex = this.notes.findIndex(n => n.idNote === note.idNote);
+          if (noteIndex !== -1) this.notes.splice(noteIndex, 1);
+
+          alert('Nota eliminada correctamente');
+        } else {
+          alert('Error: ' + response.message);
+        }
+      },
+      error: (err: any) => {
+        alert('Error en la eliminación: ' + err.message);
+      }
+    });
+  }
 
 }
