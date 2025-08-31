@@ -44,11 +44,21 @@ export class BoardComponent {
     { color: '#ce74e0ff'}
     ];
 
+    let top = recoverNote.positionY || 0;
+    let left = recoverNote.positionX || 0;
+
+    if (top === 0) {
+      top = 200 * (index % 3);
+    }
+    if (left === 0) {
+      left = 200 * (index % 5);
+    }
+    
     return{
       ...recoverNote,
       color: colorNotes[Math.floor(Math.random() * colorNotes.length)].color,
-      top: (200 * (index % 3)),
-      left: (200 * (index % 5)),
+      top: top,
+      left: left,
       saved: true
     }
   }
