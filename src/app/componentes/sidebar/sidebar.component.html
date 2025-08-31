@@ -2,9 +2,6 @@
   <h2>Agrega una nota</h2>
   <p>Haz clic en el botón para agregar notas a tu tablero.</p>
   <button type="button" data-testid="add-category" (click)="openModal()">+</button>
-
-  <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
-  <p class="offline" *ngIf="offline">Modo sin backend: guardando en el navegador</p>
 </div>
 
 <div class="note-container">
@@ -21,7 +18,7 @@
 <div class="modal" *ngIf="modalOpen">
   <h3>Nueva Categoría</h3>
 
-  <label>Nombre (categoryId)</label>
+  <label>Nombre </label>
   <input type="text"
          [(ngModel)]="form.categoryId"
          placeholder="Ej: Trabajo" />
