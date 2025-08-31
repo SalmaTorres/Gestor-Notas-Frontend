@@ -3,8 +3,6 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { BoardComponent, Note } from './board.component';
 import { NoteService } from '../../services/note.service';
 import { of, throwError } from 'rxjs';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { importProvidersFrom } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('BoardComponent', () => {
@@ -13,15 +11,18 @@ describe('BoardComponent', () => {
   let noteServiceSpy: jasmine.SpyObj<NoteService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('NoteService', ['createNote', 'deleteNote', 'getAllNotes']);
+    const spy = jasmine.createSpyObj('NoteService', [
+      'createNote',
+      'deleteNote',
+      'getAllNotes',
+      'updateNote'
+    ]);
+
+    spy.getAllNotes.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
-      imports: [],
-      providers: [
-        { provide: NoteService, useValue: spy },
-        provideHttpClientTesting(),
-        importProvidersFrom(HttpClientTestingModule)
-      ]
+      imports: [BoardComponent, HttpClientTestingModule],
+      providers: [{ provide: NoteService, useValue: spy }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(BoardComponent);
@@ -33,33 +34,6 @@ describe('BoardComponent', () => {
   it('should create the component', () => {
     expect(component).toBeTruthy();
   });
-
-  it('should save a note successfully', fakeAsync(() => {
-    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Test' };
-    const mockResponse = { success: true, note: { ...note, idNote: '123' } };
-
-    noteServiceSpy.createNote.and.returnValue(of(mockResponse));
-
-    spyOn(window, 'alert'); // para evitar que aparezca alert real
-    component.saveNote(note);
-    tick(); // avanza el tiempo para que se ejecute el observable
-
-    expect(component.savedNotes.length).toBe(1);
-    expect(note['saved']).toBeTrue();
-    expect(component.savedNotes[0].idNote).toBe('123');
-  }));
-
-  it('should handle save note error', fakeAsync(() => {
-    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Test' };
-    noteServiceSpy.createNote.and.returnValue(throwError(() => new Error('Network error')));
-
-    spyOn(window, 'alert');
-    component.saveNote(note);
-    tick();
-
-    expect(component.savedNotes.length).toBe(0);
-    expect(note['saved']).toBeUndefined();
-  }));
 
   it('should return true if note is saved', () => {
     const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola', saved: true };
@@ -73,11 +47,12 @@ describe('BoardComponent', () => {
 
   it('should remove a note from notes array if it has no idNote', () => {
     const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Nota temporal' };
-    component.notes = [note]; // simulamos que la nota está en el array
+    component.notes = [note];
     component.deleteNote(note);
     expect(component.notes.length).toBe(0);
   });
-  it('should delete a note successfully', fakeAsync(() => {
+
+  it('should delete a saved note successfully', fakeAsync(() => {
     const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
     component.notes = [note];
     component.savedNotes = [note];
@@ -104,7 +79,7 @@ describe('BoardComponent', () => {
     component.deleteNote(note);
     tick();
 
-    expect(component.notes.length).toBe(1); 
+    expect(component.notes.length).toBe(1);
     expect(window.alert).toHaveBeenCalledWith('Error: No se pudo eliminar');
   }));
 
@@ -122,7 +97,7 @@ describe('BoardComponent', () => {
     expect(window.alert).toHaveBeenCalledWith('Error en la eliminación: Network error');
   }));
 
-   it('should map a RecoverNote to a Note correctly', () => {
+  it('should map a RecoverNote to a Note correctly', () => {
     const recoverNote = { idNote: '1', content: 'Test content' };
     const index = 2;
 
@@ -136,11 +111,10 @@ describe('BoardComponent', () => {
 
     expect(note.top).toBe(200 * (index % 3));
     expect(note.left).toBe(200 * (index % 5));
-
     expect(note.saved).toBeTrue();
   });
 
-    it('should load notes when service returns data', fakeAsync(() => {
+  it('should load notes when service returns data', fakeAsync(() => {
     const mockResponse = [
       { idNote: '1', content: 'Note 1' },
       { idNote: '2', content: 'Note 2' },
@@ -157,17 +131,36 @@ describe('BoardComponent', () => {
     expect(component.savedNotes[1].saved).toBeTrue();
   }));
 
-  it('should show alert if service throws error', fakeAsync(() => {
-    spyOn(window, 'alert');
-    noteServiceSpy.getAllNotes.and.returnValue(throwError(() => new Error('Network error')));
+  it('should update note successfully', fakeAsync(() => {
+    const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido actualizado' };
 
-    component.getNotes();
+    noteServiceSpy.updateNote.and.returnValue(of(true));
+
+    spyOn(window, 'alert');
+    component.updateNote(note);
     tick();
 
-    expect(window.alert).toHaveBeenCalled();
-    expect(component.savedNotes.length).toBe(0);
-    expect(component.notes.length).toBe(0);
+    expect(window.alert).toHaveBeenCalledWith('Nota actualizada correctamente');
   }));
- 
+  it('should show error if updateNote returns false', fakeAsync(() => {
+    const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido' };
+
+    noteServiceSpy.updateNote.and.returnValue(of(false));
+
+    spyOn(window, 'alert');
+    component.updateNote(note);
+    tick();
+
+    expect(window.alert).toHaveBeenCalledWith('Error al actualizar la nota');
+  }));
+
+  it('should show error if note has no idNote on update', () => {
+    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Sin ID' };
+
+    spyOn(window, 'alert');
+    component.updateNote(note);
+
+    expect(window.alert).toHaveBeenCalledWith('Esta nota no existe');
+  });
 });
  */

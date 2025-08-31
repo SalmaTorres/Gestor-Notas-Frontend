@@ -13,6 +13,7 @@ export interface Note {
 export interface Category {
   categoryId: string; 
   color: string;
+
 }
 
 @Injectable({

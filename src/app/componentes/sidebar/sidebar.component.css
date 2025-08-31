@@ -1,4 +1,8 @@
-/* CONTENEDOR LATERAL */
+
+* {
+   font-family: Arial, sans-serif;
+}
+
 .sidebar {
   width: 300px;
   background-color: #f4f4f9;
@@ -22,16 +26,14 @@
 .sidebar h2 {
   font-size: 2rem;
   margin-bottom: 10px;
-  font-family: Arial;
 }
 
 .sidebar p {
   font-size: 1rem;
   color: #555;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   font-family: Arial;
 }
-
 .add-btn {
   border: 1px solid #ddd;
   background: #fafafa;
@@ -54,9 +56,8 @@
   height: 90px;
   color: #000;
   cursor: pointer;
-  font-weight: bold;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.14px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
@@ -72,7 +73,7 @@
 
 .note:hover {
   transform: scale(1.05) rotate(var(--rotate-angle, -3deg));
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2); 
 }
 
 .backdrop { position:fixed; inset:0; background:rgba(0,0,0,.25); }

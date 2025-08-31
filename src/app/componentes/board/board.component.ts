@@ -15,6 +15,8 @@ export interface Note {
 export interface RecoverNote {
   idNote?: string;
   content: string;
+  positionX?: number;
+  positionY?: number;
 }
 
 @Component({
@@ -41,11 +43,22 @@ export class BoardComponent {
     { color: '#fdb96cff'},
     { color: '#ce74e0ff'}
     ];
+
+    let top = recoverNote.positionY || 0;
+    let left = recoverNote.positionX || 0;
+
+    if (top === 0) {
+      top = 200 * (index % 3);
+    }
+    if (left === 0) {
+      left = 200 * (index % 5);
+    }
+    
     return{
       ...recoverNote,
       color: colorNotes[Math.floor(Math.random() * colorNotes.length)].color,
-      top: 200* (index%3),// < 600? 200 * index: 300 * index%3,
-      left: 200 * (index%5),// < 1000? 200 * index: 300 * index%5,
+      top: top,
+      left: left,
       saved: true
     }
   }
@@ -63,23 +76,35 @@ export class BoardComponent {
     })
   }
 
-  saveNote(note: Note) {
-    this.noteService.createNote(note).subscribe({
-      next: (response) => {
-        if (response.success) {
-          note.idNote = response.note.idNote; 
-          this.savedNotes.push(response.note);
-          note['saved'] = true;
-          alert('Nota guardada correctamente');
-        } else {
-          alert('Error: ' + response.message);
-        }
-      },
-      error: (err) => {
-        alert('Error al guardar la nota: ' + err.message);
-      }
-    });
-  }
+  // saveNote(note: Note) {
+  //   if (!note.content || note.content.trim() === '') {
+  //     alert('El contenido de la nota no puede estar vacío');
+  //     return;
+  //   }
+
+  //   const noteToSave = {
+  //     content: note.content.trim(),
+  //     color: note.color,
+  //     positionX: note.left, 
+  //     positionY: note.top 
+  //   };
+
+  //   this.noteService.createNote(note).subscribe({
+  //     next: (response) => {
+  //       if (response.success) {
+  //         note.idNote = response.note.idNote; 
+  //         this.savedNotes.push(response.note);
+  //         note['saved'] = true;
+  //         alert('Nota guardada correctamente');
+  //       } else {
+  //         alert('Error: ' + response.message);
+  //       }
+  //     },
+  //     error: (err) => {
+  //       alert('Error al guardar la nota: ' + err.message);
+  //     }
+  //   });
+  // }
 
   updateNote(note: Note){
     if(note.idNote){
@@ -105,27 +130,33 @@ export class BoardComponent {
     return !!note['saved'];
   }
   deleteNote(note: Note) {
-    //Nota no guardada todavía solo se quita del arreglo notes
-  if (!note.idNote) {
-    this.notes = this.notes.filter(n => n !== note);
-    return;
-  }
-
-  this.noteService.deleteNote(note.idNote!).subscribe({
-    next: (response: any) => {
-      if (response.success) {
-        this.savedNotes = this.savedNotes.filter(n => n.idNote !== note.idNote);
-        this.notes = this.notes.filter(n => n.idNote !== note.idNote);
-
-        alert('Nota eliminada correctamente');
-      } else {
-        alert('Error: ' + response.message);
-      }
-    },
-    error: (err: any) => {
-      alert('Error en la eliminación: ' + err.message);
+    // Nota no guardada todavía → quitar del arreglo notes
+    if (!note.idNote) {
+      const index = this.notes.indexOf(note);
+      if (index !== -1) this.notes.splice(index, 1);
+      return;
     }
-  });
-}
+
+    this.noteService.deleteNote(note.idNote!).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          // eliminar de savedNotes
+          const savedIndex = this.savedNotes.findIndex(n => n.idNote === note.idNote);
+          if (savedIndex !== -1) this.savedNotes.splice(savedIndex, 1);
+
+          // eliminar de notes
+          const noteIndex = this.notes.findIndex(n => n.idNote === note.idNote);
+          if (noteIndex !== -1) this.notes.splice(noteIndex, 1);
+
+          alert('Nota eliminada correctamente');
+        } else {
+          alert('Error: ' + response.message);
+        }
+      },
+      error: (err: any) => {
+        alert('Error en la eliminación: ' + err.message);
+      }
+    });
+  }
 
 }
