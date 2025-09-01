@@ -1,5 +1,9 @@
 <div class="board" #board>
-  <div *ngFor="let note of notes" cdkDrag (cdkDragEnded)="onDragEnd($event, board)"
+  <div *ngFor="let note of notes"
+       cdkDrag
+       [cdkDragData]="note"
+       [cdkDragBoundary]="'.board'"
+       (cdkDragEnded)="onDragEnd($event, board, trash)"
        class="note"
        [ngStyle]="{
          'background-color': note.color,
@@ -9,9 +13,12 @@
     <div class="note-category" *ngIf="$any(note)?.categoryId">
       {{ $any(note)?.categoryId }}
     </div>
-
     <textarea [(ngModel)]="note.content"></textarea>
     <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
-    <button id="delete" (click)="deleteNote(note)">Eliminar</button>
+  </div>
+
+  <!-- 🚮 Basurero -->
+  <div class="trash" #trash>
+    <div class="trash-visual">🗑️ Eliminar Nota</div>
   </div>
 </div>

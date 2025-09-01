@@ -3,6 +3,8 @@ import { Component, Input } from '@angular/core';
 import { NoteService } from '../../services/note.service';
 import { FormsModule } from '@angular/forms';
 import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDropList } from '@angular/cdk/drag-drop';
 
 export interface Note {
   idNote?: string;
@@ -22,7 +24,7 @@ export interface RecoverNote {
 
 @Component({
   selector: 'app-board',
-  imports: [CommonModule, FormsModule, CdkDrag],
+  imports: [CommonModule, FormsModule, CdkDrag, CdkDropList],
   templateUrl: './board.component.html',
   styleUrl: './board.component.css'
 })
@@ -161,24 +163,41 @@ export class BoardComponent {
     });
   }
 
-onDragEnd(event: any, board: HTMLElement) {
-  const { x, y } = event.source.getFreeDragPosition();
-  const note = event.source.element.nativeElement;
-  const boardRect = board.getBoundingClientRect();
-  const noteRect = note.getBoundingClientRect();
+  onDragEnd(event: any, board: HTMLElement, trash: HTMLElement) {
+    const noteEl = event.source.element.nativeElement;
+    const noteRect = noteEl.getBoundingClientRect();
+    const trashRect = trash.getBoundingClientRect();
 
-  // Verifica si salió del tablero
-  const isOut =
-    noteRect.left < boardRect.left ||
-    noteRect.right > boardRect.right ||
-    noteRect.top < boardRect.top ||
-    noteRect.bottom > boardRect.bottom;
+    // Verificar si la nota se soltó dentro del área del basurero
+    const isInsideTrash =
+      noteRect.left < trashRect.right &&
+      noteRect.right > trashRect.left &&
+      noteRect.top < trashRect.bottom &&
+      noteRect.bottom > trashRect.top;
 
-    console.log(isOut);
-  if (isOut) {
-  // Resetea a posición inicial
-    event.source.reset();
+    if (isInsideTrash) {
+      const note: Note = event.source.data;
+      this.deleteNote(note);
+      return; // no mover posición si fue eliminada
+    }
+
+    // si no cayó en basurero, mantener posición
+    const { x, y } = event.source.getFreeDragPosition();
+    console.log("Nueva posición:", x, y);
   }
-}
+
+  // Detectar drop en el basurero
+  canDropToTrash = () => true;
+
+  onDropToTrash(event: CdkDragDrop<any>) {
+    console.log("Drop detectado en basurero:", event);
+    const note: Note = event.item.data;
+
+    event.item.reset(); // reset visual
+
+    if (note) {
+      this.deleteNote(note);
+    }
+  }
 
 }
