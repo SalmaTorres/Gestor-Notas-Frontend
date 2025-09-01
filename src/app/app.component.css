@@ -9,8 +9,8 @@ app-sidebar {
 .main-container {
   display: flex;
   height: 100vh;
-  width: 100%;
-  overflow: hidden;
+  width: 100vw;
+  position: fixed;
 }
 
 .modal-overlay {

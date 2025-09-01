@@ -4,9 +4,10 @@
 
 .board {
   height: 100%;
+  width: 100%;
   background-color: #dfe0e0;
   overflow: hidden;
-  position: relative;
+  position: absolute;
 }
 
 .note {

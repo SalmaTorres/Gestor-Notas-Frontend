@@ -130,6 +130,7 @@ export class BoardComponent {
   isNoteSaved(note: Note): boolean {
     return !!note['saved'];
   }
+  
   deleteNote(note: Note) {
     // Nota no guardada todavía → quitar del arreglo notes
     if (!note.idNote) {
@@ -173,8 +174,9 @@ onDragEnd(event: any, board: HTMLElement) {
     noteRect.top < boardRect.top ||
     noteRect.bottom > boardRect.bottom;
 
+    console.log(isOut);
   if (isOut) {
-    // Resetea a posición inicial
+  // Resetea a posición inicial
     event.source.reset();
   }
 }
