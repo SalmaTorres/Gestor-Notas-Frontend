@@ -18,6 +18,13 @@ export interface RecoverNote {
   content: string;
   positionX?: number;
   positionY?: number;
+  category?: Category;
+}
+
+export interface Category {
+  categoryId: string; 
+  color: string;
+
 }
 
 @Component({
@@ -47,6 +54,7 @@ export class BoardComponent {
 
     let top = recoverNote.positionY || 0;
     let left = recoverNote.positionX || 0;
+    let colorNote = recoverNote.category?.color || "0";
 
     if (top === 0) {
       top = 200 * (index % 3);
@@ -54,10 +62,13 @@ export class BoardComponent {
     if (left === 0) {
       left = 200 * (index % 5);
     }
+    if(colorNote === "0"){
+      colorNote = colorNotes[Math.floor(Math.random() * colorNotes.length)].color
+    }
     
     return{
       ...recoverNote,
-      color: colorNotes[Math.floor(Math.random() * colorNotes.length)].color,
+      color: colorNote,
       top: top,
       left: left,
       saved: true
