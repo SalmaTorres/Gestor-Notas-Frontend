@@ -35,24 +35,24 @@ describe('BoardComponent', () => {
   });
 
   it('should return true if note is saved', () => {
-    const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola', saved: true };
+    const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola', saved: true, active: false };
     expect(component.isNoteSaved(note)).toBeTrue();
   });
 
   it('should return false if note is not saved', () => {
-    const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola' };
+    const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola', active: false };
     expect(component.isNoteSaved(note)).toBeFalse();
   });
 
   it('should remove a note from notes array if it has no idNote', () => {
-    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Nota temporal' };
+    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Nota temporal', active: false };
     component.notes = [note];
     component.deleteNote(note);
     expect(component.notes.length).toBe(0);
   });
 
   it('should delete a saved note successfully', fakeAsync(() => {
-    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada', active: false };
     component.notes = [note];
     component.savedNotes = [note];
 
@@ -68,7 +68,7 @@ describe('BoardComponent', () => {
   }));
 
   it('should handle delete note error response', fakeAsync(() => {
-    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada', active: false };
     component.notes = [note];
     component.savedNotes = [note];
 
@@ -83,7 +83,7 @@ describe('BoardComponent', () => {
   }));
 
   it('should handle delete note request failure', fakeAsync(() => {
-    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada', active: false };
     component.notes = [note];
     component.savedNotes = [note];
 
@@ -131,7 +131,7 @@ describe('BoardComponent', () => {
   }));
 
   it('should update note successfully', fakeAsync(() => {
-    const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido actualizado' };
+    const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido actualizado', active: false };
 
     noteServiceSpy.updateNote.and.returnValue(of(true));
 
@@ -142,7 +142,7 @@ describe('BoardComponent', () => {
     expect(window.alert).toHaveBeenCalledWith('Nota actualizada correctamente');
   }));
   it('should show error if updateNote returns false', fakeAsync(() => {
-    const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido' };
+    const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido', active: false };
 
     noteServiceSpy.updateNote.and.returnValue(of(false));
 
@@ -154,7 +154,7 @@ describe('BoardComponent', () => {
   }));
 
   it('should show error if note has no idNote on update', () => {
-    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Sin ID' };
+    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Sin ID', active: false };
 
     spyOn(window, 'alert');
     component.updateNote(note);
