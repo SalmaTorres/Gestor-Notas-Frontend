@@ -161,4 +161,31 @@ describe('BoardComponent', () => {
 
     expect(window.alert).toHaveBeenCalledWith('Esta nota no existe');
   });
+
+    it('should set all notes inactive and bring selected note to front', () => {
+    const note1: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Nota 1', active: true };
+    const note2: Note = { idNote: '2', color: '#FFB6C1', top: 20, left: 20, content: 'Nota 2', active: true };
+    const note3: Note = { idNote: '3', color: '#8bc34a', top: 30, left: 30, content: 'Nota 3', active: true };
+
+    component.notes = [note1, note2, note3];
+
+    component.bringToFront(note2);
+
+    expect(note1.active).toBeFalse();
+    expect(note2.active).toBeTrue();
+    expect(note3.active).toBeFalse();
+  });
+
+  it('should activate only the passed note even if it was already inactive', () => {
+    const note1: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Nota 1', active: false };
+    const note2: Note = { idNote: '2', color: '#FFB6C1', top: 20, left: 20, content: 'Nota 2', active: false };
+
+    component.notes = [note1, note2];
+
+    component.bringToFront(note1);
+
+    expect(note1.active).toBeTrue();
+    expect(note2.active).toBeFalse();
+  });
+
 });
