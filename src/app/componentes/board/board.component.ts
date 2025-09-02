@@ -36,6 +36,7 @@ export class BoardComponent {
   colorNotes = [
     '#ffeb3b', '#8bc34a', '#fa719f', '#74c7e0', '#fdb96c', '#ce74e0'
   ];
+  
 
   constructor(private noteService: NoteService) {
     this.getNotes();
@@ -129,7 +130,7 @@ export class BoardComponent {
           const noteIndex = this.notes.findIndex(n => n.idNote === note.idNote);
           if (noteIndex !== -1) this.notes.splice(noteIndex, 1);
 
-          alert('Nota eliminada correctamente');
+          //alert('Nota eliminada correctamente');
         } else {
           alert('Error: ' + response.message);
         }
@@ -140,6 +141,9 @@ export class BoardComponent {
     });
   }
 
+
+  lastDragPosition: { note: Note, top: number, left: number } | null = null;
+  
   onDragStarted(event: any) {
     this.isDragging = true;
   }
@@ -176,7 +180,7 @@ export class BoardComponent {
 
     if (isInsideTrash) {
       const note: Note = event.source.data;
-      this.deleteNote(note);
+      this.openDeleteConfirm(note);
       return; // no mover posición si fue eliminada
     }
 
@@ -186,16 +190,25 @@ export class BoardComponent {
   }
 
   // Detectar drop en el basurero
-  canDropToTrash = () => true;
+  confirmDeleteOpen = false;
+  noteToDelete: Note | null = null;
 
-  onDropToTrash(event: CdkDragDrop<any>) {
-    console.log("Drop detectado en basurero:", event);
-    const note: Note = event.item.data;
-
-    event.item.reset(); // reset visual
-
-    if (note) {
-      this.deleteNote(note);
-    }
+  openDeleteConfirm(note: Note) {
+    this.noteToDelete = note;
+    this.confirmDeleteOpen = true;
+    console.log('Modal abierto para:', note); // <-- prueba de depuración
   }
+
+  closeDeleteConfirm() {
+    this.confirmDeleteOpen = false;
+    this.noteToDelete = null;
+  }
+
+  confirmDelete() {
+    if (this.noteToDelete) {
+      this.deleteNote(this.noteToDelete);
+    }
+    this.closeDeleteConfirm();
+  }
+
 }

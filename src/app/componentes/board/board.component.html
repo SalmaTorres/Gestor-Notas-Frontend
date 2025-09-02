@@ -22,3 +22,15 @@
     <div class="trash-visual">🗑️ Eliminar Nota</div>
   </div>
 </div>
+
+<div class="backdrop" *ngIf="confirmDeleteOpen" (click)="closeDeleteConfirm()"></div>
+
+<div class="modal" *ngIf="confirmDeleteOpen">
+  <h3>¿Eliminar Nota?</h3>
+  <p>¿Estás seguro que quieres eliminar esta nota?</p>
+
+  <div class="actions">
+    <button type="button" (click)="confirmDelete()">Eliminar</button>
+    <button type="button" (click)="closeDeleteConfirm()">Cancelar</button>
+  </div>
+</div>
