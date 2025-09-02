@@ -1,17 +1,5 @@
 * {
-   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.sidebar {
-  width: 300px;
-  background: linear-gradient(135deg, #f4f4f9 0%, #e6e9f0 100%);
-  padding: 25px;
-  position: fixed;
-  height: 100%;
-  top: 0;
-  left: 0;
-  box-shadow: 3px 0px 15px rgba(0, 0, 0, 0.08);
-  overflow-y: auto; 
+   font-family: Arial;
 }
 
 .sidebar-header {
@@ -20,7 +8,7 @@
   background: transparent;  
   z-index: 2;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  width: 100%;
 }
 
 .sidebar h2 {
@@ -68,8 +56,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);   
   gap: 25px;
-  padding-top: 20px;
-  padding-bottom: 30px;
+  width: auto;
 }
 
 .note {
@@ -87,7 +74,6 @@
   justify-content: center;
   box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15);
   transform: rotate(var(--rotate-angle, -3deg)); 
-  border-radius: 8px;
 }
 
 .note p { 
@@ -237,4 +223,12 @@
 
 .actions button:last-child:hover {
   background: #f8f9fa;
+}
+
+.newCategory{
+  display: flex; 
+  flex-direction: row;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  gap: 20px;
 }

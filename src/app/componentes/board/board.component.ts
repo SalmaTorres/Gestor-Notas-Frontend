@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { NoteService } from '../../services/note.service';
+import { Category, NoteService } from '../../services/note.service';
 import { FormsModule } from '@angular/forms';
 
 export interface Note {
@@ -10,6 +10,7 @@ export interface Note {
   left: number;
   content: string;
   saved?: boolean;
+  categoryId?: string; 
 }
 
 export interface RecoverNote {
@@ -17,6 +18,7 @@ export interface RecoverNote {
   content: string;
   positionX?: number;
   positionY?: number;
+  categoryId?: string;
 }
 
 @Component({
@@ -29,9 +31,32 @@ export interface RecoverNote {
 export class BoardComponent {
   @Input() notes: Note[] = [];
   savedNotes: Note[] = [];
+  filteredNotes: Note[] = [];
+
+  searchTerm: string = '';
+  selectedCategory: string = '';
+  categories: Category[] = [];
+
+  errorMsg = '';
 
   constructor(private noteService: NoteService) {
     this.getNotes();
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.errorMsg = '';
+    this.noteService.getAllCategories().subscribe({
+      next: (cats) => { this.categories = cats || []; },
+      error: (err) => { this.errorMsg = this.parseError(err); }
+    });
+  }
+
+  private parseError(err: any): string {
+    if (err?.error?.message) return err.error.message;
+    if (err?.status === 0)   return 'No se pudo conectar con el backend.';
+    if (err?.status === 404) return 'Ruta no encontrada (revisa /api).';
+    return 'No se pudo completar la operación.';
   }
   
   mapNotes(recoverNote: RecoverNote, index: number): Note{
@@ -63,18 +88,19 @@ export class BoardComponent {
     }
   }
 
-  getNotes(){
+  getNotes() {
     this.noteService.getAllNotes().subscribe({
       next: (response) => {
-          if(response) {
-            this.savedNotes = response.map((note: RecoverNote, index: number) => this.mapNotes(note, index));
-            this.notes.push(...this.savedNotes)
-          } else{
-            alert('No existen notas, crea tu primer nota');
-          }
+        if (response) {
+          this.savedNotes = response.map((note: RecoverNote, index: number) => this.mapNotes(note, index));
+          this.filteredNotes = [...this.savedNotes];
+        } else {
+          alert('No existen notas, crea tu primer nota');
+        }
       },
-    })
+    });
   }
+
 
   // saveNote(note: Note) {
   //   if (!note.content || note.content.trim() === '') {
@@ -129,8 +155,8 @@ export class BoardComponent {
   isNoteSaved(note: Note): boolean {
     return !!note['saved'];
   }
+
   deleteNote(note: Note) {
-    // Nota no guardada todavía → quitar del arreglo notes
     if (!note.idNote) {
       const index = this.notes.indexOf(note);
       if (index !== -1) this.notes.splice(index, 1);
@@ -140,11 +166,9 @@ export class BoardComponent {
     this.noteService.deleteNote(note.idNote!).subscribe({
       next: (response: any) => {
         if (response.success) {
-          // eliminar de savedNotes
           const savedIndex = this.savedNotes.findIndex(n => n.idNote === note.idNote);
           if (savedIndex !== -1) this.savedNotes.splice(savedIndex, 1);
 
-          // eliminar de notes
           const noteIndex = this.notes.findIndex(n => n.idNote === note.idNote);
           if (noteIndex !== -1) this.notes.splice(noteIndex, 1);
 
@@ -159,4 +183,15 @@ export class BoardComponent {
     });
   }
 
+  applyFilters() {
+    this.filteredNotes = this.savedNotes.filter(note => {
+      const matchesCategory = this.selectedCategory
+        ? note.categoryId === this.selectedCategory
+        : true;
+      const matchesSearch = this.searchTerm
+        ? note.content.toLowerCase().includes(this.searchTerm.toLowerCase())
+        : true;
+      return matchesCategory && matchesSearch;
+    });
+  }
 }

@@ -1,17 +1,29 @@
-<div class="board">
-  <div *ngFor="let note of notes"
-       class="note"
-       [ngStyle]="{
-         'background-color': note.color,
-         'top.px': 10 + note.top,
-         'left.px': 400 + note.left
-       }">
-    <div class="note-category" *ngIf="$any(note)?.categoryId">
-      {{ $any(note)?.categoryId }}
+<main>
+  <div class="search-container">
+    <div class="dropdown">
+      <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
+        <option value="">Todas</option>
+        <option *ngFor="let cat of categories" [value]="cat.categoryId">{{ cat.categoryId }}</option>
+      </select>
     </div>
 
-    <textarea [(ngModel)]="note.content"></textarea>
-    <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
-    <button id="delete" (click)="deleteNote(note)">Eliminar</button>
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar por palabra clave..."
+        (input)="applyFilters()"
+      />
+    </div>
+    <button class="search-btn">Buscar</button>
   </div>
-</div>
+
+  <div class="board">
+    <div *ngFor="let note of filteredNotes" class="note" [ngStyle]="{ 'background-color': note.color, 'top.px': 10 + note.top, 'left.px': 400 + note.left }">
+      <div class="note-category" *ngIf="note.categoryId">{{ note.categoryId }}</div>
+      <textarea [(ngModel)]="note.content"></textarea>
+      <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
+      <button id="delete" (click)="deleteNote(note)">Eliminar</button>
+    </div>
+  </div>
+</main>
