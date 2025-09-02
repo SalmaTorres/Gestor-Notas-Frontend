@@ -124,10 +124,7 @@ export class BoardComponent {
       const cleanNote: RecoverNote = { content:content, positionX:left, positionY:top };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
-            if(response){
-              alert("Nota actualizada correctamente");
-            }
-            else{
+            if(!response){
               alert("Error al actualizar la nota");
             }
         },
