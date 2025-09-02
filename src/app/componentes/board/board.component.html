@@ -32,8 +32,16 @@
 <div class="modal" *ngIf="confirmDeleteOpen">
   <h3>¿Estás seguro que quieres eliminar esta nota?</h3>
 
+  <p class="modal-text">
+    Esta acción no se puede deshacer. La nota será eliminada permanentemente.
+  </p>
+
   <div class="actions">
-    <button type="button" (click)="closeDeleteConfirm(true)">Cancelar</button>
-    <button type="button" (click)="confirmDelete()">Eliminar</button>
+    <button type="button" (click)="closeDeleteConfirm(true)">
+      Cancelar
+    </button>
+    <button type="button" class="danger" (click)="confirmDelete()">
+      Eliminar
+    </button>
   </div>
 </div>

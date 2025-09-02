@@ -44,30 +44,78 @@ button{
   pointer-events: none; /* deja pasar los eventos al drag */
 }
 
-/* Modal */
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 999;
+/* Reutilizamos backdrop y modal del modal de categorías */
+.backdrop { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0,0,0,.4); 
+  backdrop-filter: blur(4px);
+  z-index: 100;
 }
 
 .modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
+  position: fixed; 
+  top: 50%; 
+  left: 50%; 
   transform: translate(-50%, -50%);
-  background: white;
-  padding: 16px;
-  border-radius: 8px;
-  z-index: 1000;
-  width: 300px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background: #fff; 
+  padding: 28px; 
+  border-radius: 16px;
+  width: 380px; 
+  display: grid; 
+  gap: 16px; 
+  z-index: 101;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: modalAppear 0.3s ease-out;
 }
 
-.actions {
-  margin-top: 16px;
-  display: flex;
+.modal h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.5rem;
+  color: #2d3436;
+  font-weight: 600;
+}
+
+.modal-text {
+  font-size: 0.95rem;
+  color: #636e72;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.actions { 
+  display: flex; 
+  gap: 12px; 
   justify-content: flex-end;
-  gap: 8px;
+  margin-top: 10px;
+}
+
+.actions button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actions button:first-child {
+  background: transparent;
+  color: #636e72;
+  border: 1px solid #ddd;
+}
+
+.actions button:first-child:hover {
+  background: #f8f9fa;
+}
+
+/* Botón rojo para eliminar */
+.actions button.danger {
+  background: linear-gradient(135deg, #e84118 0%, #ff6b6b 100%);
+  color: white;
+  border: none;
+}
+
+.actions button.danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(232, 65, 24, 0.3);
 }
