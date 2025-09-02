@@ -57,12 +57,15 @@
   grid-template-columns: repeat(2, 1fr);   
   gap: 25px;
   width: auto;
+  height: 46vh;
+  overflow-y: auto;
+  padding: 10px;
 }
 
 .note {
   padding: 15px;
-  width: 90px;
-  height: 90px;
+  width: 75px;
+  height: 75px;
   color: #2d3436;
   cursor: pointer;
   text-align: center;
@@ -228,7 +231,6 @@
 .newCategory{
   display: flex; 
   flex-direction: row;
-  padding-top: 30px;
-  padding-bottom: 30px;
-  gap: 20px;
+  padding: 30px 8px;
+  justify-content: space-between;
 }
