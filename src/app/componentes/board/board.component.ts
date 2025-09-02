@@ -121,7 +121,7 @@ export class BoardComponent {
   updateNote(note: Note){
     if(note.idNote){
       const { idNote, content, top, left } = note;
-      const cleanNote: RecoverNote = { content:content, positionX:top, positionY:left };
+      const cleanNote: RecoverNote = { content:content, positionX:left, positionY:top };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
             if(response){
@@ -187,14 +187,17 @@ onDragEnd(event: any, board: HTMLElement) {
     noteRect.bottom > boardRect.bottom;
 
     console.log(isOut);
+    console.log("left", x);
+    console.log("top", y);
   if (isOut) {
   // Resetea a posición inicial
     event.source.reset();
   }
   else{
-    //noteSelect.top = x;
-    //noteSelect.left = y;
-    //this.updateNote(noteSelect);
+    noteSelect.top += y;
+    noteSelect.left += x;
+    event.source.reset();
+    this.updateNote(noteSelect);
   }
 }
 

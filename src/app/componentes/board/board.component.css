@@ -6,12 +6,12 @@
   height: 100%;
   width: 100%;
   background-color: #dfe0e0;
-  
+  position: relative;
 
 }
 
 .note {
-  position:fixed;
+  position:absolute;
   width: 150px;
   height: 150px;
   padding: 8px;

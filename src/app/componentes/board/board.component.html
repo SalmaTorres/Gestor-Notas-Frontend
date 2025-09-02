@@ -3,8 +3,8 @@
  [cdkDragData]="note" class="note"
        [ngStyle]="{
          'background-color': note.color,
-         'top.px': 10 + note.top,
-         'left.px': 400 + note.left
+         'top.px': note.top,
+         'left.px': note.left
        }">
     <div class="note-category" *ngIf="$any(note)?.categoryId">
       {{ $any(note)?.categoryId }}
