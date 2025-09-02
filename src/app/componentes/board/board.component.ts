@@ -154,6 +154,28 @@ export class BoardComponent {
     this.lastDragPosition = { note, top: note.top!, left: note.left! };
   }
 
+  onDragMoved(event: any, note:Note, trash: HTMLElement){
+    const noteEl = event.source.element.nativeElement;
+    const noteRect = noteEl.getBoundingClientRect();
+    const trashRect = trash.getBoundingClientRect();
+
+    // Verificar si la nota se soltó dentro del área del basurero
+    const isInsideTrash =
+      noteRect.left < trashRect.right &&
+      noteRect.right > trashRect.left &&
+      noteRect.top < trashRect.bottom &&
+      noteRect.bottom > trashRect.top;
+
+    if (isInsideTrash) {
+      // abrir basurero y guardar nota pendiente
+      this.trashOpen = true;
+      this.pendingNote = note;
+    }
+    else{
+      this.trashOpen = false;
+    }
+  }
+
   onDragEnd(event: any, board: HTMLElement, trash: HTMLElement) {
     this.isDragging = false;
     this.isDraggingOverTrash = false;
@@ -196,9 +218,10 @@ export class BoardComponent {
       if (cancelled && this.lastDragPosition && this.noteToDelete) {
       // Devolver la nota a su última posición
       if (this.lastDragPosition.note === this.noteToDelete) {
-        this.noteToDelete.top = this.lastDragPosition.top;
-        this.noteToDelete.left = this.lastDragPosition.left -140; 
+        //this.noteToDelete.top = this.lastDragPosition.top;
+        //this.noteToDelete.left = this.lastDragPosition.left; 
         // el -150 px la mueve a la izquierda del basurero
+        
       }
     }
     this.confirmDeleteOpen = false;

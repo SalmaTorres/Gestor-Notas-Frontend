@@ -4,6 +4,7 @@
        [cdkDragData]="note"
        [cdkDragBoundary]="'.board'"
        (cdkDragStarted)="onDragStarted(note)"
+       (cdkDragMoved)="onDragMoved($event, note, trash)"
        (cdkDragEnded)="onDragEnd($event, board, trash)"
        class="note"
        [ngStyle]="{
