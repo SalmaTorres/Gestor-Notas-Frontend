@@ -13,6 +13,7 @@ interface BoardNote {
   content: string;
   saved?: boolean;
   category?: Category; // para mostrar en UI si el back lo devuelve
+  active: boolean;
 }
 
 @Component({
@@ -39,7 +40,8 @@ export class AppComponent {
       top: 0,
       left: 0,
       content: '',
-      category: cat
+      category: cat,
+      active: false
     };
     this.showNoteModal = true;
   }
