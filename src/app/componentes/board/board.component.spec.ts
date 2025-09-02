@@ -139,7 +139,7 @@ describe('BoardComponent', () => {
     component.updateNote(note);
     tick();
 
-    expect(window.alert).toHaveBeenCalledWith('Nota actualizada correctamente');
+    expect(window.alert).not.toHaveBeenCalled();
   }));
   it('should show error if updateNote returns false', fakeAsync(() => {
     const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido', active: false };
