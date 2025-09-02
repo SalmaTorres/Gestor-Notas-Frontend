@@ -187,5 +187,67 @@ describe('BoardComponent', () => {
     expect(note1.active).toBeTrue();
     expect(note2.active).toBeFalse();
   });
+    describe('onDragEnd', () => {
+    let boardElement: HTMLElement;
+    let mockEvent: any;
+    let note: Note;
+
+    beforeEach(() => {
+      boardElement = document.createElement('div');
+      document.body.appendChild(boardElement);
+      boardElement.getBoundingClientRect = jasmine.createSpy().and.returnValue({
+        left: 0,
+        top: 0,
+        right: 500,
+        bottom: 500,
+        width: 500,
+        height: 500
+      } as DOMRect);
+
+      note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Nota', active: false };
+
+      mockEvent = {
+        source: {
+          getFreeDragPosition: jasmine.createSpy().and.returnValue({ x: 20, y: 30 }),
+          element: {
+            nativeElement: {
+              getBoundingClientRect: jasmine.createSpy()
+            }
+          },
+          data: note,
+          reset: jasmine.createSpy()
+        }
+      };
+    });
+
+    it('should reset note position if it is out of board', () => {
+      mockEvent.source.element.nativeElement.getBoundingClientRect.and.returnValue({
+        left: -50, top: -50, right: -10, bottom: -10, width: 40, height: 40
+      } as DOMRect);
+
+      component.onDragEnd(mockEvent, boardElement);
+
+      expect(mockEvent.source.reset).toHaveBeenCalled();
+      spyOn(component, 'updateNote');
+      expect(component.updateNote).not.toHaveBeenCalled();
+    });
+
+    it('should update note position and call updateNote if inside board', fakeAsync(() => {
+      spyOn(component, 'updateNote');
+
+      mockEvent.source.element.nativeElement.getBoundingClientRect.and.returnValue({
+        left: 100, top: 100, right: 200, bottom: 200, width: 100, height: 100
+      } as DOMRect);
+
+      component.onDragEnd(mockEvent, boardElement);
+      tick();
+
+      expect(note.top).toBe(40);
+      expect(note.left).toBe(30);
+      expect(mockEvent.source.reset).toHaveBeenCalled();
+      expect(component.updateNote).toHaveBeenCalledWith(note);
+    }));
+  });
 
 });
+
