@@ -218,10 +218,9 @@ export class BoardComponent {
       if (cancelled && this.lastDragPosition && this.noteToDelete) {
       // Devolver la nota a su última posición
       if (this.lastDragPosition.note === this.noteToDelete) {
-        //this.noteToDelete.top = this.lastDragPosition.top;
-        //this.noteToDelete.left = this.lastDragPosition.left; 
+        this.noteToDelete.top = this.lastDragPosition.top;
+        this.noteToDelete.left = this.lastDragPosition.left -140; 
         // el -150 px la mueve a la izquierda del basurero
-        
       }
     }
     this.confirmDeleteOpen = false;
