@@ -3,6 +3,7 @@
        cdkDrag
        [cdkDragData]="note"
        [cdkDragBoundary]="'.board'"
+       (cdkDragStarted)="onDragStarted(note)"
        (cdkDragEnded)="onDragEnd($event, board, trash)"
        class="note"
        [ngStyle]="{
@@ -26,11 +27,10 @@
 <div class="backdrop" *ngIf="confirmDeleteOpen" (click)="closeDeleteConfirm()"></div>
 
 <div class="modal" *ngIf="confirmDeleteOpen">
-  <h3>¿Eliminar Nota?</h3>
-  <p>¿Estás seguro que quieres eliminar esta nota?</p>
+  <h3>¿Estás seguro que quieres eliminar esta nota?</h3>
 
   <div class="actions">
+    <button type="button" (click)="closeDeleteConfirm(true)">Cancelar</button>
     <button type="button" (click)="confirmDelete()">Eliminar</button>
-    <button type="button" (click)="closeDeleteConfirm()">Cancelar</button>
   </div>
 </div>

@@ -31,13 +31,18 @@ export class BoardComponent {
   savedNotes: Note[] = [];
   isDraggingOverTrash: boolean = false;
   isDragging: boolean = false;
+  // Detectar drop en el basurero
+  confirmDeleteOpen = false;
+  noteToDelete: Note | null = null;
+
+  //ultima posicion cuando se arrastra la nota
+  lastDragPosition: { note: Note, top: number, left: number } | null = null;
 
   // Colores para nuevas notas
   colorNotes = [
     '#ffeb3b', '#8bc34a', '#fa719f', '#74c7e0', '#fdb96c', '#ce74e0'
   ];
   
-
   constructor(private noteService: NoteService) {
     this.getNotes();
   }
@@ -141,32 +146,15 @@ export class BoardComponent {
     });
   }
 
-
-  lastDragPosition: { note: Note, top: number, left: number } | null = null;
-  
-  onDragStarted(event: any) {
-    this.isDragging = true;
-  }
-
-  onDragMoved(event: any, trash: HTMLElement) {
-    const noteEl = event.source.element.nativeElement;
-    const noteRect = noteEl.getBoundingClientRect();
-    const trashRect = trash.getBoundingClientRect();
-
-    // Verificar si la nota está sobre el área del basurero
-    const isOverTrash =
-      noteRect.left < trashRect.right &&
-      noteRect.right > trashRect.left &&
-      noteRect.top < trashRect.bottom &&
-      noteRect.bottom > trashRect.top;
-
-    this.isDraggingOverTrash = isOverTrash;
+  onDragStarted(note: Note){
+    this.lastDragPosition = { note, top: note.top!, left: note.left! };
   }
 
   onDragEnd(event: any, board: HTMLElement, trash: HTMLElement) {
     this.isDragging = false;
     this.isDraggingOverTrash = false;
     
+    const note: Note = event.source.data;
     const noteEl = event.source.element.nativeElement;
     const noteRect = noteEl.getBoundingClientRect();
     const trashRect = trash.getBoundingClientRect();
@@ -179,29 +167,33 @@ export class BoardComponent {
       noteRect.bottom > trashRect.top;
 
     if (isInsideTrash) {
-      const note: Note = event.source.data;
       this.openDeleteConfirm(note);
-      return; // no mover posición si fue eliminada
+      return;
     }
-
+    
     // si no cayó en basurero, mantener posición
     const { x, y } = event.source.getFreeDragPosition();
     console.log("Nueva posición:", x, y);
   }
 
-  // Detectar drop en el basurero
-  confirmDeleteOpen = false;
-  noteToDelete: Note | null = null;
-
   openDeleteConfirm(note: Note) {
     this.noteToDelete = note;
     this.confirmDeleteOpen = true;
-    console.log('Modal abierto para:', note); // <-- prueba de depuración
+    console.log('Modal abierto'); // <-- prueba de depuración
   }
 
-  closeDeleteConfirm() {
+  closeDeleteConfirm(cancelled: boolean = false) {
+      if (cancelled && this.lastDragPosition && this.noteToDelete) {
+      // Devolver la nota a su última posición
+      if (this.lastDragPosition.note === this.noteToDelete) {
+        this.noteToDelete.top = this.lastDragPosition.top;
+        this.noteToDelete.left = this.lastDragPosition.left - 150; 
+        // el -150 px la mueve a la izquierda del basurero
+      }
+    }
     this.confirmDeleteOpen = false;
     this.noteToDelete = null;
+    this.lastDragPosition = null;
   }
 
   confirmDelete() {
@@ -210,5 +202,4 @@ export class BoardComponent {
     }
     this.closeDeleteConfirm();
   }
-
 }
