@@ -1,5 +1,11 @@
-<div class="board">
+<div class="board" #board>
   <div *ngFor="let note of notes"
+       cdkDrag
+       [cdkDragData]="note"
+       [cdkDragBoundary]="'.board'"
+       (cdkDragStarted)="onDragStarted(note)"
+       (cdkDragMoved)="onDragMoved($event, note, trash)"
+       (cdkDragEnded)="onDragEnd($event, board, trash)"
        class="note"
        [ngStyle]="{
          'background-color': note.color,
@@ -9,9 +15,33 @@
     <div class="note-category" *ngIf="$any(note)?.categoryId">
       {{ $any(note)?.categoryId }}
     </div>
-
     <textarea [(ngModel)]="note.content"></textarea>
     <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
-    <button id="delete" (click)="deleteNote(note)">Eliminar</button>
+  </div>
+
+  <!-- 🚮 Basurero -->
+  <div class="trash" #trash>
+    <img [src]="trashOpen ? '/trashopen.png' : '/trashclose.png'"
+        alt="trash bin"
+        class="trash-image" />
+  </div>
+</div>
+
+<div class="backdrop" *ngIf="confirmDeleteOpen" (click)="closeDeleteConfirm()"></div>
+
+<div class="modal" *ngIf="confirmDeleteOpen">
+  <h3>¿Estás seguro que quieres eliminar esta nota?</h3>
+
+  <p class="modal-text">
+    Esta acción no se puede deshacer. La nota será eliminada permanentemente.
+  </p>
+
+  <div class="actions">
+    <button type="button" (click)="closeDeleteConfirm(true)">
+      Cancelar
+    </button>
+    <button type="button" class="danger" (click)="confirmDelete()">
+      Eliminar
+    </button>
   </div>
 </div>

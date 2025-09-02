@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NoteService } from '../../services/note.service';
 import { FormsModule } from '@angular/forms';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 
 export interface Note {
   idNote?: string;
@@ -21,29 +22,36 @@ export interface RecoverNote {
 
 @Component({
   selector: 'app-board',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CdkDrag],
   templateUrl: './board.component.html',
   styleUrl: './board.component.css'
 })
-
 export class BoardComponent {
   @Input() notes: Note[] = [];
   savedNotes: Note[] = [];
+  isDraggingOverTrash: boolean = false;
+  isDragging: boolean = false;
+  // Detectar drop en el basurero
+  confirmDeleteOpen = false;
+  noteToDelete: Note | null = null;
 
+  //bandera para abrir el basurero
+  trashOpen = false;
+  pendingNote: Note | null = null;
+
+  //ultima posicion cuando se arrastra la nota
+  lastDragPosition: { note: Note, top: number, left: number } | null = null;
+
+  // Colores para nuevas notas
+  colorNotes = [
+    '#ffeb3b', '#8bc34a', '#fa719f', '#74c7e0', '#fdb96c', '#ce74e0'
+  ];
+  
   constructor(private noteService: NoteService) {
     this.getNotes();
   }
   
-  mapNotes(recoverNote: RecoverNote, index: number): Note{
-    var colorNotes = [
-    { color: '#ffeb3b'},
-    { color: '#8bc34a'},
-    { color: '#fa719fff'},
-    { color: '#74c7e0ff'},
-    { color: '#fdb96cff'},
-    { color: '#ce74e0ff'}
-    ];
-
+  mapNotes(recoverNote: RecoverNote, index: number): Note {
     let top = recoverNote.positionY || 0;
     let left = recoverNote.positionX || 0;
 
@@ -54,16 +62,16 @@ export class BoardComponent {
       left = 200 * (index % 5);
     }
     
-    return{
+    return {
       ...recoverNote,
-      color: colorNotes[Math.floor(Math.random() * colorNotes.length)].color,
+      color: this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)],
       top: top,
       left: left,
       saved: true
     }
   }
 
-  getNotes(){
+  getNotes() {
     this.noteService.getAllNotes().subscribe({
       next: (response) => {
           if(response) {
@@ -76,38 +84,20 @@ export class BoardComponent {
     })
   }
 
-  // saveNote(note: Note) {
-  //   if (!note.content || note.content.trim() === '') {
-  //     alert('El contenido de la nota no puede estar vacío');
-  //     return;
-  //   }
+  addNewNote() {
+    const newNote: Note = {
+      color: this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)],
+      top: Math.random() * 300,
+      left: Math.random() * 500,
+      content: 'Nueva nota...',
+      saved: false
+    };
+    
+    this.notes.push(newNote);
+  }
 
-  //   const noteToSave = {
-  //     content: note.content.trim(),
-  //     color: note.color,
-  //     positionX: note.left, 
-  //     positionY: note.top 
-  //   };
-
-  //   this.noteService.createNote(note).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         note.idNote = response.note.idNote; 
-  //         this.savedNotes.push(response.note);
-  //         note['saved'] = true;
-  //         alert('Nota guardada correctamente');
-  //       } else {
-  //         alert('Error: ' + response.message);
-  //       }
-  //     },
-  //     error: (err) => {
-  //       alert('Error al guardar la nota: ' + err.message);
-  //     }
-  //   });
-  // }
-
-  updateNote(note: Note){
-    if(note.idNote){
+  updateNote(note: Note) {
+    if(note.idNote) {
       const { idNote, content } = note;
       const cleanNote: RecoverNote = { content };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
@@ -129,6 +119,7 @@ export class BoardComponent {
   isNoteSaved(note: Note): boolean {
     return !!note['saved'];
   }
+  
   deleteNote(note: Note) {
     // Nota no guardada todavía → quitar del arreglo notes
     if (!note.idNote) {
@@ -148,7 +139,7 @@ export class BoardComponent {
           const noteIndex = this.notes.findIndex(n => n.idNote === note.idNote);
           if (noteIndex !== -1) this.notes.splice(noteIndex, 1);
 
-          alert('Nota eliminada correctamente');
+          //alert('Nota eliminada correctamente');
         } else {
           alert('Error: ' + response.message);
         }
@@ -159,4 +150,89 @@ export class BoardComponent {
     });
   }
 
+  onDragStarted(note: Note){
+    this.lastDragPosition = { note, top: note.top!, left: note.left! };
+  }
+
+  onDragMoved(event: any, note:Note, trash: HTMLElement){
+    const noteEl = event.source.element.nativeElement;
+    const noteRect = noteEl.getBoundingClientRect();
+    const trashRect = trash.getBoundingClientRect();
+
+    // Verificar si la nota se soltó dentro del área del basurero
+    const isInsideTrash =
+      noteRect.left < trashRect.right &&
+      noteRect.right > trashRect.left &&
+      noteRect.top < trashRect.bottom &&
+      noteRect.bottom > trashRect.top;
+
+    if (isInsideTrash) {
+      // abrir basurero y guardar nota pendiente
+      this.trashOpen = true;
+      this.pendingNote = note;
+    }
+    else{
+      this.trashOpen = false;
+    }
+  }
+
+  onDragEnd(event: any, board: HTMLElement, trash: HTMLElement) {
+    this.isDragging = false;
+    this.isDraggingOverTrash = false;
+    
+    const note: Note = event.source.data;
+    const noteEl = event.source.element.nativeElement;
+    const noteRect = noteEl.getBoundingClientRect();
+    const trashRect = trash.getBoundingClientRect();
+
+    // Verificar si la nota se soltó dentro del área del basurero
+    const isInsideTrash =
+      noteRect.left < trashRect.right &&
+      noteRect.right > trashRect.left &&
+      noteRect.top < trashRect.bottom &&
+      noteRect.bottom > trashRect.top;
+
+    if (isInsideTrash) {
+      // abrir basurero y guardar nota pendiente
+      this.trashOpen = true;
+      this.pendingNote = note;
+
+      //abrir cuadro de dialogo
+      this.openDeleteConfirm(note);
+      return;
+    }
+    
+    // si no cayó en basurero, mantener posición
+    const { x, y } = event.source.getFreeDragPosition();
+    console.log("Nueva posición:", x, y);
+  }
+
+  openDeleteConfirm(note: Note) {
+    this.noteToDelete = note;
+    this.confirmDeleteOpen = true;
+
+    console.log('Modal abierto'); // <-- prueba de depuración
+  }
+
+  closeDeleteConfirm(cancelled: boolean = false) {
+      if (cancelled && this.lastDragPosition && this.noteToDelete) {
+      // Devolver la nota a su última posición
+      if (this.lastDragPosition.note === this.noteToDelete) {
+        this.noteToDelete.top = this.lastDragPosition.top;
+        this.noteToDelete.left = this.lastDragPosition.left -140; 
+        // el -150 px la mueve a la izquierda del basurero
+      }
+    }
+    this.confirmDeleteOpen = false;
+    this.noteToDelete = null;
+    this.lastDragPosition = null;
+    this.trashOpen = false; // cerrar el basurero siempre
+  }
+
+  confirmDelete() {
+    if (this.noteToDelete) {
+      this.deleteNote(this.noteToDelete);
+    }
+    this.closeDeleteConfirm();
+  }
 }

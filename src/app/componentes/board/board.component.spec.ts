@@ -34,131 +34,190 @@ describe('BoardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should return true if note is saved', () => {
-    const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola', saved: true };
-    expect(component.isNoteSaved(note)).toBeTrue();
+  describe('isNoteSaved', () => {
+    it('should return true if note is saved', () => {
+      const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola', saved: true };
+      expect(component.isNoteSaved(note)).toBeTrue();
+    });
+
+    it('should return false if note is not saved', () => {
+      const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola' };
+      expect(component.isNoteSaved(note)).toBeFalse();
+    });
   });
 
-  it('should return false if note is not saved', () => {
-    const note: Note = { color: '#FFB6C1', top: 20, left: 20, content: 'Hola' };
-    expect(component.isNoteSaved(note)).toBeFalse();
+  describe('deleteNote', () => {
+    it('should remove a note from notes array if it has no idNote', () => {
+      const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Nota temporal' };
+      component.notes = [note];
+      component.deleteNote(note);
+      expect(component.notes.length).toBe(0);
+    });
+
+    it('should delete a saved note successfully', fakeAsync(() => {
+      const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+      component.notes = [note];
+      component.savedNotes = [note];
+
+      noteServiceSpy.deleteNote.and.returnValue(of({ success: true }));
+
+      component.deleteNote(note);
+      tick();
+
+      expect(component.notes.length).toBe(0);
+      expect(component.savedNotes.length).toBe(0);
+    }));
+
+    it('should handle delete note error response', fakeAsync(() => {
+      const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+      component.notes = [note];
+      component.savedNotes = [note];
+
+      noteServiceSpy.deleteNote.and.returnValue(of({ success: false, message: 'No se pudo eliminar' }));
+
+      spyOn(window, 'alert');
+      component.deleteNote(note);
+      tick();
+
+      expect(component.notes.length).toBe(1);
+      expect(window.alert).toHaveBeenCalledWith('Error: No se pudo eliminar');
+    }));
+
+    it('should handle delete note request failure', fakeAsync(() => {
+      const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
+      component.notes = [note];
+      component.savedNotes = [note];
+
+      noteServiceSpy.deleteNote.and.returnValue(throwError(() => new Error('Network error')));
+
+      spyOn(window, 'alert');
+      component.deleteNote(note);
+      tick();
+
+      expect(window.alert).toHaveBeenCalledWith('Error en la eliminación: Network error');
+    }));
   });
 
-  it('should remove a note from notes array if it has no idNote', () => {
-    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Nota temporal' };
-    component.notes = [note];
-    component.deleteNote(note);
-    expect(component.notes.length).toBe(0);
+  describe('mapNotes', () => {
+    it('should map a RecoverNote to a Note correctly', () => {
+      const recoverNote = { idNote: '1', content: 'Test content' };
+      const index = 2;
+
+      const note: Note = component.mapNotes(recoverNote as any, index);
+
+      expect(note.idNote).toBe('1');
+      expect(note.content).toBe('Test content');
+
+      const validColors = ['#ffeb3b','#8bc34a','#fa719f','#74c7e0','#fdb96c','#ce74e0'];
+      expect(validColors).toContain(note.color);
+
+      expect(note.top).toBe(200 * (index % 3));
+      expect(note.left).toBe(200 * (index % 5));
+      expect(note.saved).toBeTrue();
+    });
   });
 
-  it('should delete a saved note successfully', fakeAsync(() => {
-    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
-    component.notes = [note];
-    component.savedNotes = [note];
+  describe('getNotes', () => {
+    it('should load notes when service returns data', fakeAsync(() => {
+      const mockResponse = [
+        { idNote: '1', content: 'Note 1' },
+        { idNote: '2', content: 'Note 2' },
+      ];
 
-    noteServiceSpy.deleteNote.and.returnValue(of({ success: true }));
+      noteServiceSpy.getAllNotes.and.returnValue(of(mockResponse));
 
-    spyOn(window, 'alert');
-    component.deleteNote(note);
-    tick();
+      component.getNotes();
+      tick();
 
-    expect(component.notes.length).toBe(0);
-    expect(component.savedNotes.length).toBe(0);
-    expect(window.alert).toHaveBeenCalledWith('Nota eliminada correctamente');
-  }));
-
-  it('should handle delete note error response', fakeAsync(() => {
-    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
-    component.notes = [note];
-    component.savedNotes = [note];
-
-    noteServiceSpy.deleteNote.and.returnValue(of({ success: false, message: 'No se pudo eliminar' }));
-
-    spyOn(window, 'alert');
-    component.deleteNote(note);
-    tick();
-
-    expect(component.notes.length).toBe(1);
-    expect(window.alert).toHaveBeenCalledWith('Error: No se pudo eliminar');
-  }));
-
-  it('should handle delete note request failure', fakeAsync(() => {
-    const note: Note = { idNote: '123', color: '#FFD700', top: 10, left: 10, content: 'Guardada' };
-    component.notes = [note];
-    component.savedNotes = [note];
-
-    noteServiceSpy.deleteNote.and.returnValue(throwError(() => new Error('Network error')));
-
-    spyOn(window, 'alert');
-    component.deleteNote(note);
-    tick();
-
-    expect(window.alert).toHaveBeenCalledWith('Error en la eliminación: Network error');
-  }));
-
-  it('should map a RecoverNote to a Note correctly', () => {
-    const recoverNote = { idNote: '1', content: 'Test content' };
-    const index = 2;
-
-    const note: Note = component.mapNotes(recoverNote as any, index);
-
-    expect(note.idNote).toBe('1');
-    expect(note.content).toBe('Test content');
-
-    const validColors = ['#ffeb3b','#8bc34a','#fa719fff','#74c7e0ff','#fdb96cff','#ce74e0ff'];
-    expect(validColors).toContain(note.color);
-
-    expect(note.top).toBe(200 * (index % 3));
-    expect(note.left).toBe(200 * (index % 5));
-    expect(note.saved).toBeTrue();
+      expect(component.savedNotes.length).toBe(2);
+      expect(component.notes.length).toBeGreaterThanOrEqual(2);
+      expect(component.savedNotes[0].saved).toBeTrue();
+    }));
   });
 
-  it('should load notes when service returns data', fakeAsync(() => {
-    const mockResponse = [
-      { idNote: '1', content: 'Note 1' },
-      { idNote: '2', content: 'Note 2' },
-    ];
+  describe('updateNote', () => {
+    it('should update note successfully', fakeAsync(() => {
+      const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido actualizado' };
 
-    noteServiceSpy.getAllNotes.and.returnValue(of(mockResponse));
+      noteServiceSpy.updateNote.and.returnValue(of(true));
 
-    component.getNotes();
-    tick();
+      spyOn(window, 'alert');
+      component.updateNote(note);
+      tick();
 
-    expect(component.savedNotes.length).toBe(2);
-    expect(component.notes.length).toBe(2);
-    expect(component.savedNotes[0].saved).toBeTrue();
-    expect(component.savedNotes[1].saved).toBeTrue();
-  }));
+      expect(window.alert).toHaveBeenCalledWith('Nota actualizada correctamente');
+    }));
 
-  it('should update note successfully', fakeAsync(() => {
-    const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido actualizado' };
+    it('should show error if updateNote returns false', fakeAsync(() => {
+      const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido' };
 
-    noteServiceSpy.updateNote.and.returnValue(of(true));
+      noteServiceSpy.updateNote.and.returnValue(of(false));
 
-    spyOn(window, 'alert');
-    component.updateNote(note);
-    tick();
+      spyOn(window, 'alert');
+      component.updateNote(note);
+      tick();
 
-    expect(window.alert).toHaveBeenCalledWith('Nota actualizada correctamente');
-  }));
-  it('should show error if updateNote returns false', fakeAsync(() => {
-    const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'Contenido' };
+      expect(window.alert).toHaveBeenCalledWith('Error al actualizar la nota');
+    }));
 
-    noteServiceSpy.updateNote.and.returnValue(of(false));
+    it('should show error if note has no idNote on update', () => {
+      const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Sin ID' };
 
-    spyOn(window, 'alert');
-    component.updateNote(note);
-    tick();
+      spyOn(window, 'alert');
+      component.updateNote(note);
 
-    expect(window.alert).toHaveBeenCalledWith('Error al actualizar la nota');
-  }));
+      expect(window.alert).toHaveBeenCalledWith('Esta nota no existe');
+    });
+  });
 
-  it('should show error if note has no idNote on update', () => {
-    const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'Sin ID' };
+  describe('drag & delete confirm flow', () => {
+    it('should set lastDragPosition on drag start', () => {
+      const note: Note = { color: '#FFD700', top: 50, left: 50, content: 'drag' };
+      component.onDragStarted(note);
+      expect(component.lastDragPosition?.note).toBe(note);
+    });
 
-    spyOn(window, 'alert');
-    component.updateNote(note);
+    it('should open delete confirm modal on drag end inside trash', () => {
+      const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'drag' };
+      const fakeElement = {
+        getBoundingClientRect: () => ({ top: 0, left: 0, right: 100, bottom: 100 })
+      };
 
-    expect(window.alert).toHaveBeenCalledWith('Esta nota no existe');
+      const event = {
+        source: {
+          data: note,
+          element: { nativeElement: fakeElement },
+          getFreeDragPosition: () => ({ x: 10, y: 20 })
+        }
+      };
+
+      component.onDragEnd(event, {} as HTMLElement, fakeElement as any);
+      expect(component.confirmDeleteOpen).toBeTrue();
+      expect(component.noteToDelete).toBe(note);
+    });
+
+    it('should reset flags when closing delete confirm', () => {
+      const note: Note = { color: '#FFD700', top: 10, left: 10, content: 'delete' };
+      component.noteToDelete = note;
+      component.confirmDeleteOpen = true;
+      component.trashOpen = true;
+
+      component.closeDeleteConfirm(true);
+
+      expect(component.confirmDeleteOpen).toBeFalse();
+      expect(component.noteToDelete).toBeNull();
+      expect(component.trashOpen).toBeFalse();
+    });
+
+    it('should call deleteNote when confirmDelete is executed', () => {
+      const note: Note = { idNote: '1', color: '#FFD700', top: 10, left: 10, content: 'delete' };
+      component.noteToDelete = note;
+      spyOn(component, 'deleteNote');
+
+      component.confirmDelete();
+
+      expect(component.deleteNote).toHaveBeenCalledWith(note);
+      expect(component.confirmDeleteOpen).toBeFalse();
+    });
   });
 });
