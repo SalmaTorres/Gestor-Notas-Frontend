@@ -15,15 +15,22 @@
         (input)="applyFilters()"
       />
     </div>
-    <button class="search-btn">Buscar</button>
   </div>
 
   <div class="board">
-    <div *ngFor="let note of filteredNotes" class="note" [ngStyle]="{ 'background-color': note.color, 'top.px': 10 + note.top, 'left.px': 400 + note.left }">
-      <div class="note-category" *ngIf="note.categoryId">{{ note.categoryId }}</div>
+    <div *ngFor="let note of filteredNotes" 
+         class="note" 
+         [ngStyle]="{ 
+           'background-color': note.color, 
+           'top.px': 10 + note.top, 
+           'left.px': 400 + note.left 
+         }">
       <textarea [(ngModel)]="note.content"></textarea>
       <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
       <button id="delete" (click)="deleteNote(note)">Eliminar</button>
     </div>
+  </div>
+  <div *ngIf="errorMsg" class="error-message">
+    {{ errorMsg }}
   </div>
 </main>

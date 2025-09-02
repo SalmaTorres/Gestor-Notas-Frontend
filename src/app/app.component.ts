@@ -31,7 +31,6 @@ export class AppComponent {
 
   constructor(private noteService: NoteService) {}
 
-  // AHORA el sidebar emite Category completo
   onNoteCreated(cat: Category) {
     this.selectedCategory = cat;
     this.currentNote = {
@@ -53,15 +52,13 @@ export class AppComponent {
       return;
     }
 
-    // genera posición
     this.currentNote.top = Math.floor(Math.random() * 500);
     this.currentNote.left = 300 + Math.floor(Math.random() * 700);
 
-    // ⬇️ Payload que el backend espera: category como OBJETO
     const payload = {
       content: text,
-      color: this.selectedCategory.color,                 // HEX
-      category: {                                         // OBJETO
+      color: this.selectedCategory.color,               
+      category: {                                        
         categoryId: this.selectedCategory.categoryId,
         color: this.selectedCategory.color
       },
@@ -71,12 +68,9 @@ export class AppComponent {
 
     this.noteService.createNote(payload as any).subscribe({
       next: (res) => {
-        // Según tu código actual, esperas { success, note }
         if (res?.success) {
-          // toma lo que devuelva el back (idNote y opcionalmente category)
           this.currentNote!.idNote = res.note?.idNote;
           this.currentNote!.saved = true;
-          // si el back devuelve la categoría, úsala; si no, conserva la seleccionada
           this.currentNote!.category = res.note?.category || this.selectedCategory;
 
           this.createdNotes.push({ ...this.currentNote! });

@@ -18,7 +18,10 @@ export interface RecoverNote {
   content: string;
   positionX?: number;
   positionY?: number;
-  categoryId?: string;
+  category?: {
+    categoryId: string;
+    color: string;
+  };
 }
 
 @Component({
@@ -40,15 +43,19 @@ export class BoardComponent {
   errorMsg = '';
 
   constructor(private noteService: NoteService) {
-    this.getNotes();
     this.loadCategories();
+    this.getNotes();
   }
 
   loadCategories(): void {
     this.errorMsg = '';
     this.noteService.getAllCategories().subscribe({
-      next: (cats) => { this.categories = cats || []; },
-      error: (err) => { this.errorMsg = this.parseError(err); }
+      next: (cats) => { 
+        this.categories = cats || []; 
+      },
+      error: (err) => { 
+        this.errorMsg = this.parseError(err); 
+      }
     });
   }
 
@@ -59,78 +66,44 @@ export class BoardComponent {
     return 'No se pudo completar la operación.';
   }
   
-  mapNotes(recoverNote: RecoverNote, index: number): Note{
-    var colorNotes = [
-    { color: '#ffeb3b'},
-    { color: '#8bc34a'},
-    { color: '#fa719fff'},
-    { color: '#74c7e0ff'},
-    { color: '#fdb96cff'},
-    { color: '#ce74e0ff'}
-    ];
-
+  mapNotes(recoverNote: RecoverNote, index: number): Note {
     let top = recoverNote.positionY || 0;
     let left = recoverNote.positionX || 0;
-
-    if (top === 0) {
-      top = 200 * (index % 3);
-    }
-    if (left === 0) {
-      left = 200 * (index % 5);
+    
+    // Obtener el color de la categoría
+    let noteColor = '#ffff99'; // Color por defecto si no hay categoría
+    if (recoverNote.category?.categoryId) {
+      const category = this.categories.find(cat => cat.categoryId === recoverNote.category?.categoryId);
+      noteColor = category?.color || recoverNote.category.color || '#ffff99';
     }
     
-    return{
+    return {
       ...recoverNote,
-      color: colorNotes[Math.floor(Math.random() * colorNotes.length)].color,
+      color: noteColor,
       top: top,
       left: left,
-      saved: true
+      saved: true,
+      categoryId: recoverNote.category?.categoryId
     }
   }
 
   getNotes() {
     this.noteService.getAllNotes().subscribe({
-      next: (response) => {
-        if (response) {
-          this.savedNotes = response.map((note: RecoverNote, index: number) => this.mapNotes(note, index));
-          this.filteredNotes = [...this.savedNotes];
+      next: (response: RecoverNote[] | null) => {
+        if (response && response.length) {
+          this.savedNotes = response.map((n, i) => this.mapNotes(n, i));
         } else {
-          alert('No existen notas, crea tu primer nota');
+          this.savedNotes = [];
         }
+        this.notes = [...this.savedNotes];
+        this.applyFilters();
       },
+      error: (err) => {
+        console.error('Error al obtener notas', err);
+        alert(this.parseError(err));
+      }
     });
   }
-
-
-  // saveNote(note: Note) {
-  //   if (!note.content || note.content.trim() === '') {
-  //     alert('El contenido de la nota no puede estar vacío');
-  //     return;
-  //   }
-
-  //   const noteToSave = {
-  //     content: note.content.trim(),
-  //     color: note.color,
-  //     positionX: note.left, 
-  //     positionY: note.top 
-  //   };
-
-  //   this.noteService.createNote(note).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         note.idNote = response.note.idNote; 
-  //         this.savedNotes.push(response.note);
-  //         note['saved'] = true;
-  //         alert('Nota guardada correctamente');
-  //       } else {
-  //         alert('Error: ' + response.message);
-  //       }
-  //     },
-  //     error: (err) => {
-  //       alert('Error al guardar la nota: ' + err.message);
-  //     }
-  //   });
-  // }
 
   updateNote(note: Note){
     if(note.idNote){
@@ -184,14 +157,25 @@ export class BoardComponent {
   }
 
   applyFilters() {
+    const search = (this.searchTerm || '').toLowerCase().trim();
+    
     this.filteredNotes = this.savedNotes.filter(note => {
-      const matchesCategory = this.selectedCategory
-        ? note.categoryId === this.selectedCategory
-        : true;
-      const matchesSearch = this.searchTerm
-        ? note.content.toLowerCase().includes(this.searchTerm.toLowerCase())
-        : true;
+      const matchesCategory = !this.selectedCategory || 
+                             this.selectedCategory === '' || 
+                             note.categoryId === this.selectedCategory;
+      
+      const matchesSearch = !search || 
+                           (note.content || '').toLowerCase().includes(search);
+      
       return matchesCategory && matchesSearch;
     });
+  }
+
+  onCategoryChange() {
+    this.applyFilters();
+  }
+
+  onSearchChange() {
+    this.applyFilters();
   }
 }
