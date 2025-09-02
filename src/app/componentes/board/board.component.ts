@@ -2,9 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NoteService } from '../../services/note.service';
 import { FormsModule } from '@angular/forms';
-import { CdkDrag } from '@angular/cdk/drag-drop';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { CdkDropList } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 
 export interface Note {
   idNote?: string;
@@ -24,29 +22,26 @@ export interface RecoverNote {
 
 @Component({
   selector: 'app-board',
-  imports: [CommonModule, FormsModule, CdkDrag, CdkDropList],
+  imports: [CommonModule, FormsModule, CdkDrag],
   templateUrl: './board.component.html',
   styleUrl: './board.component.css'
 })
-
 export class BoardComponent {
   @Input() notes: Note[] = [];
   savedNotes: Note[] = [];
+  isDraggingOverTrash: boolean = false;
+  isDragging: boolean = false;
+
+  // Colores para nuevas notas
+  colorNotes = [
+    '#ffeb3b', '#8bc34a', '#fa719f', '#74c7e0', '#fdb96c', '#ce74e0'
+  ];
 
   constructor(private noteService: NoteService) {
     this.getNotes();
   }
   
-  mapNotes(recoverNote: RecoverNote, index: number): Note{
-    var colorNotes = [
-    { color: '#ffeb3b'},
-    { color: '#8bc34a'},
-    { color: '#fa719fff'},
-    { color: '#74c7e0ff'},
-    { color: '#fdb96cff'},
-    { color: '#ce74e0ff'}
-    ];
-
+  mapNotes(recoverNote: RecoverNote, index: number): Note {
     let top = recoverNote.positionY || 0;
     let left = recoverNote.positionX || 0;
 
@@ -57,16 +52,16 @@ export class BoardComponent {
       left = 200 * (index % 5);
     }
     
-    return{
+    return {
       ...recoverNote,
-      color: colorNotes[Math.floor(Math.random() * colorNotes.length)].color,
+      color: this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)],
       top: top,
       left: left,
       saved: true
     }
   }
 
-  getNotes(){
+  getNotes() {
     this.noteService.getAllNotes().subscribe({
       next: (response) => {
           if(response) {
@@ -79,38 +74,20 @@ export class BoardComponent {
     })
   }
 
-  // saveNote(note: Note) {
-  //   if (!note.content || note.content.trim() === '') {
-  //     alert('El contenido de la nota no puede estar vacío');
-  //     return;
-  //   }
+  addNewNote() {
+    const newNote: Note = {
+      color: this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)],
+      top: Math.random() * 300,
+      left: Math.random() * 500,
+      content: 'Nueva nota...',
+      saved: false
+    };
+    
+    this.notes.push(newNote);
+  }
 
-  //   const noteToSave = {
-  //     content: note.content.trim(),
-  //     color: note.color,
-  //     positionX: note.left, 
-  //     positionY: note.top 
-  //   };
-
-  //   this.noteService.createNote(note).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         note.idNote = response.note.idNote; 
-  //         this.savedNotes.push(response.note);
-  //         note['saved'] = true;
-  //         alert('Nota guardada correctamente');
-  //       } else {
-  //         alert('Error: ' + response.message);
-  //       }
-  //     },
-  //     error: (err) => {
-  //       alert('Error al guardar la nota: ' + err.message);
-  //     }
-  //   });
-  // }
-
-  updateNote(note: Note){
-    if(note.idNote){
+  updateNote(note: Note) {
+    if(note.idNote) {
       const { idNote, content } = note;
       const cleanNote: RecoverNote = { content };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
@@ -163,7 +140,29 @@ export class BoardComponent {
     });
   }
 
+  onDragStarted(event: any) {
+    this.isDragging = true;
+  }
+
+  onDragMoved(event: any, trash: HTMLElement) {
+    const noteEl = event.source.element.nativeElement;
+    const noteRect = noteEl.getBoundingClientRect();
+    const trashRect = trash.getBoundingClientRect();
+
+    // Verificar si la nota está sobre el área del basurero
+    const isOverTrash =
+      noteRect.left < trashRect.right &&
+      noteRect.right > trashRect.left &&
+      noteRect.top < trashRect.bottom &&
+      noteRect.bottom > trashRect.top;
+
+    this.isDraggingOverTrash = isOverTrash;
+  }
+
   onDragEnd(event: any, board: HTMLElement, trash: HTMLElement) {
+    this.isDragging = false;
+    this.isDraggingOverTrash = false;
+    
     const noteEl = event.source.element.nativeElement;
     const noteRect = noteEl.getBoundingClientRect();
     const trashRect = trash.getBoundingClientRect();
@@ -199,5 +198,4 @@ export class BoardComponent {
       this.deleteNote(note);
     }
   }
-
 }
