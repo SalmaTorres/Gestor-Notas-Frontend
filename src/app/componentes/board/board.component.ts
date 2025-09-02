@@ -35,6 +35,10 @@ export class BoardComponent {
   confirmDeleteOpen = false;
   noteToDelete: Note | null = null;
 
+  //bandera para abrir el basurero
+  trashOpen = false;
+  pendingNote: Note | null = null;
+
   //ultima posicion cuando se arrastra la nota
   lastDragPosition: { note: Note, top: number, left: number } | null = null;
 
@@ -167,6 +171,11 @@ export class BoardComponent {
       noteRect.bottom > trashRect.top;
 
     if (isInsideTrash) {
+      // abrir basurero y guardar nota pendiente
+      this.trashOpen = true;
+      this.pendingNote = note;
+
+      //abrir cuadro de dialogo
       this.openDeleteConfirm(note);
       return;
     }
@@ -179,6 +188,7 @@ export class BoardComponent {
   openDeleteConfirm(note: Note) {
     this.noteToDelete = note;
     this.confirmDeleteOpen = true;
+
     console.log('Modal abierto'); // <-- prueba de depuración
   }
 
@@ -187,13 +197,14 @@ export class BoardComponent {
       // Devolver la nota a su última posición
       if (this.lastDragPosition.note === this.noteToDelete) {
         this.noteToDelete.top = this.lastDragPosition.top;
-        this.noteToDelete.left = this.lastDragPosition.left - 150; 
+        this.noteToDelete.left = this.lastDragPosition.left -140; 
         // el -150 px la mueve a la izquierda del basurero
       }
     }
     this.confirmDeleteOpen = false;
     this.noteToDelete = null;
     this.lastDragPosition = null;
+    this.trashOpen = false; // cerrar el basurero siempre
   }
 
   confirmDelete() {

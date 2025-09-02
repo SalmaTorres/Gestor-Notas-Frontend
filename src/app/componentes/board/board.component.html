@@ -20,7 +20,9 @@
 
   <!-- 🚮 Basurero -->
   <div class="trash" #trash>
-    <div class="trash-visual">🗑️ Eliminar Nota</div>
+    <img [src]="trashOpen ? '/trashopen.png' : '/trashclose.png'"
+        alt="trash bin"
+        class="trash-image" />
   </div>
 </div>
 
