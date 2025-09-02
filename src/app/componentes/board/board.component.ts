@@ -120,8 +120,8 @@ export class BoardComponent {
 
   updateNote(note: Note){
     if(note.idNote){
-      const { idNote, content } = note;
-      const cleanNote: RecoverNote = { content };
+      const { idNote, content, top, left } = note;
+      const cleanNote: RecoverNote = { content:content, positionX:top, positionY:left };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
             if(response){
@@ -177,6 +177,7 @@ onDragEnd(event: any, board: HTMLElement) {
   const note = event.source.element.nativeElement;
   const boardRect = board.getBoundingClientRect();
   const noteRect = note.getBoundingClientRect();
+  const noteSelect:Note = event.source.data;
 
   // Verifica si salió del tablero
   const isOut =
@@ -189,6 +190,11 @@ onDragEnd(event: any, board: HTMLElement) {
   if (isOut) {
   // Resetea a posición inicial
     event.source.reset();
+  }
+  else{
+    //noteSelect.top = x;
+    //noteSelect.left = y;
+    //this.updateNote(noteSelect);
   }
 }
 
