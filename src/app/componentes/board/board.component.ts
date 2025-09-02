@@ -11,6 +11,7 @@ export interface Note {
   left: number;
   content: string;
   saved?: boolean;
+  active: boolean;
 }
 
 export interface RecoverNote {
@@ -71,7 +72,8 @@ export class BoardComponent {
       color: colorNote,
       top: top,
       left: left,
-      saved: true
+      saved: true,
+      active: false
     }
   }
 
@@ -86,6 +88,11 @@ export class BoardComponent {
           }
       },
     })
+  }
+
+  bringToFront(note: Note) {
+    this.notes.forEach(n => n.active = false);
+    note.active = true;
   }
 
   // saveNote(note: Note) {

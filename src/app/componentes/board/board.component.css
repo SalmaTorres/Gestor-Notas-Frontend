@@ -16,6 +16,11 @@
   height: 150px;
   padding: 8px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.note.active {
+  z-index: 1000;
 }
 
 .note textarea {
