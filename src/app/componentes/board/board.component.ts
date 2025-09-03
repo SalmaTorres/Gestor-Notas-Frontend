@@ -99,7 +99,7 @@ export class BoardComponent {
 
   private parseError(err: any): string {
     if (err?.error?.message) return err.error.message;
-    if (err?.status === 0)   return 'No se pudo conectar con el backend.';
+    if (err?.status === 0)   return 'No se pudo conectar con el servidor. Intente más tarde.';
     if (err?.status === 404) return 'Ruta no encontrada (revisa /api).';
     return 'No se pudo completar la operación.';
   }
@@ -138,7 +138,7 @@ export class BoardComponent {
       },
       error: (err) => {
         console.error('Error al obtener notas', err);
-        alert(this.parseError(err));
+        this.parseError(err);
       }
     });
   }
@@ -168,10 +168,7 @@ export class BoardComponent {
       const cleanNote: RecoverNote = { content };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
-            if(response){
-              alert("Nota actualizada correctamente");
-            }
-            else{
+            if(!response){
               alert("Error al actualizar la nota");
             }
         },
