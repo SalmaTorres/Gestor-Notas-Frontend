@@ -164,8 +164,8 @@ export class BoardComponent {
   updateNote(note: Note){
     console.log(note.idNote);
     if(note.idNote){
-      const { idNote, content } = note;
-      const cleanNote: RecoverNote = { content };
+      const { idNote, content, top, left } = note;
+      const cleanNote: RecoverNote = { content, positionX:left, positionY:top };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
             if(!response){

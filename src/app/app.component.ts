@@ -106,7 +106,7 @@ export class AppComponent {
             this.boardComponent.setSelectedCategory(this.selectedCategory!.categoryId);
           }
           
-          alert('Nota guardada correctamente');
+          //alert('Nota guardada correctamente');
           this.closeModal();
         } else {
           alert('Error: ' + (res?.message || 'No se pudo guardar'));
