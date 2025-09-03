@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Note {
@@ -13,7 +13,6 @@ export interface Note {
 export interface Category {
   categoryId: string; 
   color: string;
-
 }
 
 @Injectable({
@@ -25,7 +24,6 @@ export class NoteService {
 
   constructor(private http: HttpClient) {}
 
-  // Note Methods
   createNote(note: Note | {
     content: string;
     color: string;      
@@ -40,6 +38,23 @@ export class NoteService {
     return this.http.get<Note[]>(this.apiUrl);
   }
 
+  searchAndFilterNotes(categoryId?: string, search?: string): Observable<Note[]> {
+    let params = new HttpParams();
+    if (categoryId) {
+      params = params.set('categoryId', categoryId);
+    }
+    if (search) {
+      params = params.set('search', search);
+    }
+    return this.http.get<Note[]>(this.apiUrl, { params });
+  }
+
+  getNotesByCategory(categoryId: string): Observable<Note[]> {
+    return this.http.get<Note[]>(this.apiUrl, { 
+      params: { categoryId: categoryId } 
+    });
+  }
+
   updateNote(id: string, note: Note): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${id}`, note);
   }
@@ -48,7 +63,6 @@ export class NoteService {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 
-  // Category Methods
   getAllCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(this.categoriesApiUrl);
   }

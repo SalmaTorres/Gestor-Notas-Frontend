@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { SidebarComponent } from './componentes/sidebar/sidebar.component';
 import { BoardComponent } from './componentes/board/board.component';
 import { CommonModule } from '@angular/common';
@@ -12,7 +12,7 @@ interface BoardNote {
   left: number;
   content: string;
   saved?: boolean;
-  category?: Category; // para mostrar en UI si el back lo devuelve
+  category?: Category; 
   active: boolean;
 }
 
@@ -25,14 +25,30 @@ interface BoardNote {
 export class AppComponent {
   title = 'notas';
   createdNotes: BoardNote[] = [];
+  categories: Category[] = [];
+  selectedCategoryForBoard: string = '';
 
   showNoteModal = false;
   currentNote: BoardNote | null = null;
   selectedCategory: Category | null = null;
 
-  constructor(private noteService: NoteService) {}
+  @ViewChild(BoardComponent) boardComponent!: BoardComponent;
 
-  // AHORA el sidebar emite Category completo
+  constructor(private noteService: NoteService) {
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.noteService.getAllCategories().subscribe({
+      next: (cats) => { 
+        this.categories = cats || []; 
+      },
+      error: (err) => { 
+        console.error('Error loading categories:', err);
+      }
+    });
+  }
+
   onNoteCreated(cat: Category) {
     this.selectedCategory = cat;
     this.currentNote = {
@@ -46,6 +62,12 @@ export class AppComponent {
     this.showNoteModal = true;
   }
 
+  onCategoryCreated(category: Category) {
+    if (this.boardComponent) {
+      this.boardComponent.addNewCategory(category);
+    }
+  }
+
   saveCurrentNote() {
     if (!this.currentNote || !this.selectedCategory) return;
 
@@ -55,15 +77,13 @@ export class AppComponent {
       return;
     }
 
-    // genera posición
     this.currentNote.top = Math.floor(Math.random() * 500);
     this.currentNote.left = 300 + Math.floor(Math.random() * 700);
 
-    // ⬇️ Payload que el backend espera: category como OBJETO
     const payload = {
       content: text,
-      color: this.selectedCategory.color,                 // HEX
-      category: {                                         // OBJETO
+      color: this.selectedCategory.color,               
+      category: {                                        
         categoryId: this.selectedCategory.categoryId,
         color: this.selectedCategory.color
       },
@@ -73,15 +93,19 @@ export class AppComponent {
 
     this.noteService.createNote(payload as any).subscribe({
       next: (res) => {
-        // Según tu código actual, esperas { success, note }
         if (res?.success) {
-          // toma lo que devuelva el back (idNote y opcionalmente category)
           this.currentNote!.idNote = res.note?.idNote;
           this.currentNote!.saved = true;
-          // si el back devuelve la categoría, úsala; si no, conserva la seleccionada
           this.currentNote!.category = res.note?.category || this.selectedCategory;
 
           this.createdNotes.push({ ...this.currentNote! });
+          
+          // Actualizar el board con la nueva nota y cambiar el filtro de categoría
+          if (this.boardComponent) {
+            this.boardComponent.refreshNotes();
+            this.boardComponent.setSelectedCategory(this.selectedCategory!.categoryId);
+          }
+          
           alert('Nota guardada correctamente');
           this.closeModal();
         } else {
@@ -93,7 +117,7 @@ export class AppComponent {
       }
     });
   }
-
+  
   onModalClosed() { this.closeModal(); }
 
   private closeModal() {

@@ -1,5 +1,23 @@
+<div class="search-container">
+    <div class="dropdown">
+      <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
+        <option value="">Todas</option>
+        <option *ngFor="let cat of categories" [value]="cat.categoryId">{{ cat.categoryId }}</option>
+      </select>
+    </div>
+
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar por palabra clave..."
+        (input)="applyFilters()"
+      />
+    </div>
+  </div>
 <div class="board" #board>
-  <div *ngFor="let note of notes"
+  <p *ngIf="errorMsg " class="no-notes-message">{{ errorMsg  }}</p>
+  <div *ngFor="let note of filteredNotes" 
        cdkDrag
        [cdkDragData]="note"
        (cdkDragStarted)="onDragStarted(note)"
@@ -13,14 +31,10 @@
          'top.px': note.top,
          'left.px': note.left
        }">
-    <div class="note-category" *ngIf="$any(note)?.categoryId">
-      {{ $any(note)?.categoryId }}
-    </div>
     <textarea [(ngModel)]="note.content"></textarea>
     <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
   </div>
 
-  <!-- 🚮 Basurero -->
   <div class="trash" #trash>
     <img [src]="trashOpen ? '/trashopen.png' : '/trashclose.png'"
         alt="trash bin"
