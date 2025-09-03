@@ -54,6 +54,9 @@ export class BoardComponent {
   colorNotes = [
     '#ffeb3b', '#8bc34a', '#fa719f', '#74c7e0', '#fdb96c', '#ce74e0'
   ];
+
+  //for typing
+  typingTimeout: any;
   
   constructor(private noteService: NoteService) {
     this.getNotes();
@@ -116,6 +119,7 @@ export class BoardComponent {
   }
 
   updateNote(note: Note){
+    console.log(note.idNote);
     if(note.idNote){
       const { idNote, content, top, left } = note;
       const cleanNote: RecoverNote = { content:content, positionX:left, positionY:top };
@@ -258,4 +262,12 @@ openDeleteConfirm(note: Note) {
     this.closeDeleteConfirm();
   }
 
+  inputContent(event: any, note:Note){
+    console.log("El usuario escribe")
+    clearTimeout(this.typingTimeout);
+    this.typingTimeout = setTimeout(()=>{
+      console.log("El usuario dejo de escribir");
+      this.updateNote(note);
+    }, 3000)
+  }
 }
