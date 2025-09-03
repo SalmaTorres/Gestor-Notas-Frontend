@@ -7,6 +7,7 @@
   max-width: 100%;
   position: relative;
   margin: 35px;
+  background-color: #fff;
 }
 
 .note {
@@ -33,6 +34,11 @@
   line-height: 1.4; 
 } 
 
+.note-category{
+  color: #2d3436;
+  font-size: 14px;
+  font-weight: 500;
+}
 button{ 
   border-radius: 5px; 
   font-size: 12px; 

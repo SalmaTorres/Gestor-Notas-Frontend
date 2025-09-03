@@ -5,6 +5,7 @@ app-sidebar {
 app-board{
   flex: 1;
   display: block;
+  background-color: #f0f0f0;
 }
 
 * {
