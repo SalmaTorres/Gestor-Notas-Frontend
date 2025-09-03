@@ -11,6 +11,7 @@ export interface Note {
   left: number;
   content: string;
   saved?: boolean;
+  categoryId?: string; 
   active: boolean;
 }
 
@@ -25,7 +26,6 @@ export interface RecoverNote {
 export interface Category {
   categoryId: string; 
   color: string;
-
 }
 
 @Component({
@@ -37,20 +37,24 @@ export interface Category {
 export class BoardComponent {
   @Input() notes: Note[] = [];
   savedNotes: Note[] = [];
+  filteredNotes: Note[] = [];
+
+  searchTerm: string = '';
+  selectedCategory: string = '';
+  categories: Category[] = [];
+
+  errorMsg = '';
+
   isDraggingOverTrash: boolean = false;
   isDragging: boolean = false;
-  // Detectar drop en el basurero
   confirmDeleteOpen = false;
   noteToDelete: Note | null = null;
 
-  //bandera para abrir el basurero
   trashOpen = false;
   pendingNote: Note | null = null;
 
-  //ultima posicion cuando se arrastra la nota
   lastDragPosition: { note: Note, top: number, left: number } | null = null;
 
-  // Colores para nuevas notas
   colorNotes = [
     '#ffeb3b', '#8bc34a', '#fa719f', '#74c7e0', '#fdb96c', '#ce74e0'
   ];
@@ -59,45 +63,84 @@ export class BoardComponent {
   typingTimeout: any;
   
   constructor(private noteService: NoteService) {
+    this.loadCategories();
     this.getNotes();
+  }
+
+  loadCategories(): void {
+    this.errorMsg = '';
+    this.noteService.getAllCategories().subscribe({
+      next: (cats) => { 
+        this.categories = cats || []; 
+      },
+      error: (err) => { 
+        this.errorMsg = this.parseError(err); 
+      }
+    });
+  }
+
+  addNewCategory(category: Category): void {
+    const existingIndex = this.categories.findIndex(c => c.categoryId === category.categoryId);
+    if (existingIndex !== -1) {
+      this.categories[existingIndex] = category;
+    } else {
+      this.categories = [category, ...this.categories];
+    }
+  }
+
+  setSelectedCategory(categoryId: string): void {
+    this.selectedCategory = categoryId;
+    this.applyFilters();
+  }
+
+  refreshNotes(): void {
+    this.getNotes();
+  }
+
+  private parseError(err: any): string {
+    if (err?.error?.message) return err.error.message;
+    if (err?.status === 0)   return 'No se pudo conectar con el backend.';
+    if (err?.status === 404) return 'Ruta no encontrada (revisa /api).';
+    return 'No se pudo completar la operación.';
   }
   
   mapNotes(recoverNote: RecoverNote, index: number): Note {
     let top = recoverNote.positionY || 0;
     let left = recoverNote.positionX || 0;
-    let colorNote = recoverNote.category?.color || "0";
-
-    if (top === 0) {
-      top = 200 * (index % 3);
-    }
-    if (left === 0) {
-      left = 200 * (index % 5);
-    }
-    if(colorNote === "0"){
-      colorNote = this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)]
+    
+    let noteColor = '#ffff99'; 
+    if (recoverNote.category?.categoryId) {
+      const category = this.categories.find(cat => cat.categoryId === recoverNote.category?.categoryId);
+      noteColor = category?.color || recoverNote.category.color || '#ffff99';
     }
     
     return {
       ...recoverNote,
-      color: colorNote,
+      color: noteColor,
       top: top,
       left: left,
       saved: true,
+      categoryId: recoverNote.category?.categoryId,
       active: false
     }
   }
 
   getNotes() {
     this.noteService.getAllNotes().subscribe({
-      next: (response) => {
-          if(response) {
-            this.savedNotes = response.map((note: RecoverNote, index: number) => this.mapNotes(note, index));
-            this.notes.push(...this.savedNotes)
-          } else{
-            alert('No existen notas, crea tu primer nota');
-          }
+      next: (response: RecoverNote[] | null) => {
+        if (response && response.length) {
+          this.savedNotes = response.map((n, i) => this.mapNotes(n, i));
+        } else {
+          this.savedNotes = [];
+        }
+        this.notes = [...this.savedNotes];
+        this.applyFilters();
       },
-    })
+      error: (err) => {
+        console.error('Error al obtener notas', err);
+        alert(this.parseError(err));
+      }
+    });
   }
 
   bringToFront(note: Note) {
@@ -121,11 +164,14 @@ export class BoardComponent {
   updateNote(note: Note){
     console.log(note.idNote);
     if(note.idNote){
-      const { idNote, content, top, left } = note;
-      const cleanNote: RecoverNote = { content:content, positionX:left, positionY:top };
+      const { idNote, content } = note;
+      const cleanNote: RecoverNote = { content };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
-            if(!response){
+            if(response){
+              alert("Nota actualizada correctamente");
+            }
+            else{
               alert("Error al actualizar la nota");
             }
         },
@@ -139,9 +185,8 @@ export class BoardComponent {
   isNoteSaved(note: Note): boolean {
     return !!note['saved'];
   }
-  
+
   deleteNote(note: Note) {
-    // Nota no guardada todavía → quitar del arreglo notes
     if (!note.idNote) {
       const index = this.notes.indexOf(note);
       if (index !== -1) this.notes.splice(index, 1);
@@ -151,15 +196,12 @@ export class BoardComponent {
     this.noteService.deleteNote(note.idNote!).subscribe({
       next: (response: any) => {
         if (response.success) {
-          // eliminar de savedNotes
           const savedIndex = this.savedNotes.findIndex(n => n.idNote === note.idNote);
           if (savedIndex !== -1) this.savedNotes.splice(savedIndex, 1);
 
-          // eliminar de notes
           const noteIndex = this.notes.findIndex(n => n.idNote === note.idNote);
           if (noteIndex !== -1) this.notes.splice(noteIndex, 1);
-
-          //alert('Nota eliminada correctamente');
+           this.applyFilters(); 
         } else {
           alert('Error: ' + response.message);
         }
@@ -168,6 +210,32 @@ export class BoardComponent {
         alert('Error en la eliminación: ' + err.message);
       }
     });
+  }
+
+  applyFilters() {
+    const search = (this.searchTerm || '').toLowerCase().trim();
+    
+    this.filteredNotes = this.savedNotes.filter(note => {
+      const matchesCategory = !this.selectedCategory || 
+                             this.selectedCategory === '' || 
+                             note.categoryId === this.selectedCategory;
+      
+      const matchesSearch = !search || 
+                           (note.content || '').toLowerCase().includes(search);
+      
+      return matchesCategory && matchesSearch;
+    });
+    this.errorMsg = this.filteredNotes.length === 0 
+      ? 'No hay notas que coincidan con los filtros.' 
+      : '';
+  }
+
+  onCategoryChange() {
+    this.applyFilters();
+  }
+
+  onSearchChange() {
+    this.applyFilters();
   }
 
   onDragStarted(note: Note){
@@ -179,7 +247,6 @@ export class BoardComponent {
     const noteRect = noteEl.getBoundingClientRect();
     const trashRect = trash.getBoundingClientRect();
 
-    // Verificar si la nota se soltó dentro del área del basurero
     const isInsideTrash =
       noteRect.left < trashRect.right &&
       noteRect.right > trashRect.left &&
@@ -187,7 +254,6 @@ export class BoardComponent {
       noteRect.bottom > trashRect.top;
 
     if (isInsideTrash) {
-      // abrir basurero y guardar nota pendiente
       this.trashOpen = true;
       this.pendingNote = note;
     }
@@ -211,7 +277,6 @@ export class BoardComponent {
       noteRect.top < trashRect.bottom &&
       noteRect.bottom > trashRect.top;
 
-  // Verifica si salió del tablero
   const isOut =
     noteRect.left < boardRect.left ||
     noteRect.right > boardRect.right ||
@@ -220,17 +285,14 @@ export class BoardComponent {
 
     console.log(isOut);
     if (isInsideTrash) {
-      // abrir basurero y guardar nota pendiente
       this.trashOpen = true;
       this.pendingNote = note;
 
-      //abrir cuadro de dialogo
       event.source.reset();
       this.openDeleteConfirm(noteSelect);
       return;
     }
   if (isOut) {
-  // Resetea a posición inicial
     event.source.reset();
   }
   else{
@@ -245,14 +307,14 @@ openDeleteConfirm(note: Note) {
     this.noteToDelete = note;
     this.confirmDeleteOpen = true;
 
-    console.log('Modal abierto'); // <-- prueba de depuración
+    console.log('Modal abierto'); 
   }
 
   closeDeleteConfirm(cancelled: boolean = false) {
     this.confirmDeleteOpen = false;
     this.noteToDelete = null;
     this.lastDragPosition = null;
-    this.trashOpen = false; // cerrar el basurero siempre
+    this.trashOpen = false; 
   }
 
   confirmDelete() {

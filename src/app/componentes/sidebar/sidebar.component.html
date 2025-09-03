@@ -1,17 +1,9 @@
 <div class="sidebar">
     <div class="sidebar-header">
     <h2>Agrega una nota</h2>
-    <p>Haz clic en el botón para agregar notas a tu tablero.</p>
-    <button
-      type="button"
-      class="add-btn"
-      data-testid="add-category"
-      (click)="openModal()"
-      title="Nueva categoría"
-    >+</button>
-
+    <p>Haz clic en una categoria para agregar una nota a tu tablero</p>
+    <h2>Categorias</h2>
   </div>
-
   <div class="sidebar-notes" role="list">
       <div
         *ngFor="let c of categories"
@@ -25,8 +17,17 @@
         <p>{{ c.categoryId }}</p>
       </div>
   </div>
+  <div class="newCategory">
+      <p>Agrega una nueva categoria</p>
+     <button
+      type="button"
+      class="add-btn"
+      data-testid="add-category"
+      (click)="openModal()"
+      title="Nueva categoría"
+      >+</button>
+    </div>
 </div>
-<!-- Modal -->
 <div class="backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
 <div class="modal" *ngIf="modalOpen">
   <h3>Nueva Categoría</h3>
