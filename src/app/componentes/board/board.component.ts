@@ -58,6 +58,9 @@ export class BoardComponent {
   colorNotes = [
     '#ffeb3b', '#8bc34a', '#fa719f', '#74c7e0', '#fdb96c', '#ce74e0'
   ];
+
+  //for typing
+  typingTimeout: any;
   
   constructor(private noteService: NoteService) {
     this.loadCategories();
@@ -96,7 +99,7 @@ export class BoardComponent {
 
   private parseError(err: any): string {
     if (err?.error?.message) return err.error.message;
-    if (err?.status === 0)   return 'No se pudo conectar con el backend.';
+    if (err?.status === 0)   return 'No se pudo conectar con el servidor. Intente más tarde.';
     if (err?.status === 404) return 'Ruta no encontrada (revisa /api).';
     return 'No se pudo completar la operación.';
   }
@@ -135,7 +138,7 @@ export class BoardComponent {
       },
       error: (err) => {
         console.error('Error al obtener notas', err);
-        alert(this.parseError(err));
+        this.parseError(err);
       }
     });
   }
@@ -159,15 +162,13 @@ export class BoardComponent {
   }
 
   updateNote(note: Note){
+    console.log(note.idNote);
     if(note.idNote){
-      const { idNote, content } = note;
-      const cleanNote: RecoverNote = { content };
+      const { idNote, content, top, left } = note;
+      const cleanNote: RecoverNote = { content, positionX:left, positionY:top };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
-            if(response){
-              alert("Nota actualizada correctamente");
-            }
-            else{
+            if(!response){
               alert("Error al actualizar la nota");
             }
         },
@@ -318,5 +319,14 @@ openDeleteConfirm(note: Note) {
       this.deleteNote(this.noteToDelete);
     }
     this.closeDeleteConfirm();
+  }
+
+  inputContent(event: any, note:Note){
+    console.log("El usuario escribe")
+    clearTimeout(this.typingTimeout);
+    this.typingTimeout = setTimeout(()=>{
+      console.log("El usuario dejo de escribir");
+      this.updateNote(note);
+    }, 3000)
   }
 }

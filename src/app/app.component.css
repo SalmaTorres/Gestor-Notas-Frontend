@@ -1,3 +1,13 @@
+app-sidebar {
+  z-index: 3;
+}
+
+app-board{
+  flex: 1;
+  display: block;
+  background-color: #f0f0f0;
+}
+
 * {
   font-family: Arial;
 }

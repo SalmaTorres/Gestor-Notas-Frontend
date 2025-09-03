@@ -31,8 +31,14 @@
          'top.px': note.top,
          'left.px': note.left
        }">
-    <textarea [(ngModel)]="note.content"></textarea>
-    <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
+    <div class="note-category" *ngIf="$any(note)?.categoryId">
+      {{ $any(note)?.categoryId }}
+    </div>
+    <textarea 
+      [(ngModel)]="note.content"
+      (input)="inputContent($event, note)"
+
+    ></textarea>
   </div>
 
   <div class="trash" #trash>
