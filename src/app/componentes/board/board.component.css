@@ -1,17 +1,27 @@
-.board { 
-  height: 100%; 
-  width: 100%; 
-  background-color: #dfe0e0; 
-} 
+* {
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-.note { 
-  position:fixed; 
-  width: 150px; 
-  height: 150px; 
-  padding: 8px; 
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
-  z-index: 10;
-} 
+.board {
+  height: 100%;
+  width: 100%;
+  background-color: #dfe0e0;
+  position: relative;
+
+}
+
+.note {
+  position:absolute;
+  width: 150px;
+  height: 150px;
+  padding: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.note.active {
+  z-index: 2;
+}
 
 .note textarea { 
   width: 100%; 

@@ -11,6 +11,7 @@ export interface Note {
   left: number;
   content: string;
   saved?: boolean;
+  active: boolean;
 }
 
 export interface RecoverNote {
@@ -18,6 +19,13 @@ export interface RecoverNote {
   content: string;
   positionX?: number;
   positionY?: number;
+  category?: Category;
+}
+
+export interface Category {
+  categoryId: string; 
+  color: string;
+
 }
 
 @Component({
@@ -54,6 +62,7 @@ export class BoardComponent {
   mapNotes(recoverNote: RecoverNote, index: number): Note {
     let top = recoverNote.positionY || 0;
     let left = recoverNote.positionX || 0;
+    let colorNote = recoverNote.category?.color || "0";
 
     if (top === 0) {
       top = 200 * (index % 3);
@@ -61,13 +70,17 @@ export class BoardComponent {
     if (left === 0) {
       left = 200 * (index % 5);
     }
+    if(colorNote === "0"){
+      colorNote = this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)]
+    }
     
     return {
       ...recoverNote,
-      color: this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)],
+      color: colorNote,
       top: top,
       left: left,
-      saved: true
+      saved: true,
+      active: false
     }
   }
 
@@ -84,28 +97,31 @@ export class BoardComponent {
     })
   }
 
+  bringToFront(note: Note) {
+    this.notes.forEach(n => n.active = false);
+    note.active = true;
+  }
+
   addNewNote() {
     const newNote: Note = {
       color: this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)],
       top: Math.random() * 300,
       left: Math.random() * 500,
       content: 'Nueva nota...',
-      saved: false
+      saved: false,
+      active: false
     };
     
     this.notes.push(newNote);
   }
 
-  updateNote(note: Note) {
-    if(note.idNote) {
-      const { idNote, content } = note;
-      const cleanNote: RecoverNote = { content };
+  updateNote(note: Note){
+    if(note.idNote){
+      const { idNote, content, top, left } = note;
+      const cleanNote: RecoverNote = { content:content, positionX:left, positionY:top };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
-            if(response){
-              alert("Nota actualizada correctamente");
-            }
-            else{
+            if(!response){
               alert("Error al actualizar la nota");
             }
         },
@@ -177,37 +193,51 @@ export class BoardComponent {
   }
 
   onDragEnd(event: any, board: HTMLElement, trash: HTMLElement) {
-    this.isDragging = false;
-    this.isDraggingOverTrash = false;
-    
-    const note: Note = event.source.data;
-    const noteEl = event.source.element.nativeElement;
-    const noteRect = noteEl.getBoundingClientRect();
-    const trashRect = trash.getBoundingClientRect();
-
-    // Verificar si la nota se soltó dentro del área del basurero
-    const isInsideTrash =
+  this.isDragging = false;
+  this.isDraggingOverTrash = false;
+  const { x, y } = event.source.getFreeDragPosition();
+  const note = event.source.element.nativeElement;
+  const boardRect = board.getBoundingClientRect();
+  const noteRect = note.getBoundingClientRect();
+  const trashRect = trash.getBoundingClientRect();
+  const noteSelect:Note = event.source.data;
+  const isInsideTrash =
       noteRect.left < trashRect.right &&
       noteRect.right > trashRect.left &&
       noteRect.top < trashRect.bottom &&
       noteRect.bottom > trashRect.top;
 
+  // Verifica si salió del tablero
+  const isOut =
+    noteRect.left < boardRect.left ||
+    noteRect.right > boardRect.right ||
+    noteRect.top < boardRect.top ||
+    noteRect.bottom > boardRect.bottom;
+
+    console.log(isOut);
     if (isInsideTrash) {
       // abrir basurero y guardar nota pendiente
       this.trashOpen = true;
       this.pendingNote = note;
 
       //abrir cuadro de dialogo
-      this.openDeleteConfirm(note);
+      event.source.reset();
+      this.openDeleteConfirm(noteSelect);
       return;
     }
-    
-    // si no cayó en basurero, mantener posición
-    const { x, y } = event.source.getFreeDragPosition();
-    console.log("Nueva posición:", x, y);
+  if (isOut) {
+  // Resetea a posición inicial
+    event.source.reset();
   }
+  else{
+    noteSelect.top += y;
+    noteSelect.left += x;
+    event.source.reset();
+    this.updateNote(noteSelect);
+  }
+}
 
-  openDeleteConfirm(note: Note) {
+openDeleteConfirm(note: Note) {
     this.noteToDelete = note;
     this.confirmDeleteOpen = true;
 
@@ -215,14 +245,6 @@ export class BoardComponent {
   }
 
   closeDeleteConfirm(cancelled: boolean = false) {
-      if (cancelled && this.lastDragPosition && this.noteToDelete) {
-      // Devolver la nota a su última posición
-      if (this.lastDragPosition.note === this.noteToDelete) {
-        this.noteToDelete.top = this.lastDragPosition.top;
-        this.noteToDelete.left = this.lastDragPosition.left -140; 
-        // el -150 px la mueve a la izquierda del basurero
-      }
-    }
     this.confirmDeleteOpen = false;
     this.noteToDelete = null;
     this.lastDragPosition = null;
@@ -235,4 +257,5 @@ export class BoardComponent {
     }
     this.closeDeleteConfirm();
   }
+
 }

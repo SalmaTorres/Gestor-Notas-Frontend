@@ -2,15 +2,16 @@
   <div *ngFor="let note of notes"
        cdkDrag
        [cdkDragData]="note"
-       [cdkDragBoundary]="'.board'"
        (cdkDragStarted)="onDragStarted(note)"
        (cdkDragMoved)="onDragMoved($event, note, trash)"
-       (cdkDragEnded)="onDragEnd($event, board, trash)"
-       class="note"
+       (cdkDragEnded)="onDragEnd($event, board, trash)" [ngClass]="{'active': note.active}"
+       class="note" 
+       (mousedown)="bringToFront(note)"
+       (cdkDragStarted)="bringToFront(note)"
        [ngStyle]="{
          'background-color': note.color,
-         'top.px': 10 + note.top,
-         'left.px': 400 + note.left
+         'top.px': note.top,
+         'left.px': note.left
        }">
     <div class="note-category" *ngIf="$any(note)?.categoryId">
       {{ $any(note)?.categoryId }}
