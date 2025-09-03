@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NoteService } from '../../services/note.service';
 import { FormsModule } from '@angular/forms';
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 
 export interface Note {
   idNote?: string;
@@ -34,25 +34,32 @@ export interface Category {
   templateUrl: './board.component.html',
   styleUrl: './board.component.css'
 })
-
 export class BoardComponent {
   @Input() notes: Note[] = [];
   savedNotes: Note[] = [];
+  isDraggingOverTrash: boolean = false;
+  isDragging: boolean = false;
+  // Detectar drop en el basurero
+  confirmDeleteOpen = false;
+  noteToDelete: Note | null = null;
 
+  //bandera para abrir el basurero
+  trashOpen = false;
+  pendingNote: Note | null = null;
+
+  //ultima posicion cuando se arrastra la nota
+  lastDragPosition: { note: Note, top: number, left: number } | null = null;
+
+  // Colores para nuevas notas
+  colorNotes = [
+    '#ffeb3b', '#8bc34a', '#fa719f', '#74c7e0', '#fdb96c', '#ce74e0'
+  ];
+  
   constructor(private noteService: NoteService) {
     this.getNotes();
   }
   
-  mapNotes(recoverNote: RecoverNote, index: number): Note{
-    var colorNotes = [
-    { color: '#ffeb3b'},
-    { color: '#8bc34a'},
-    { color: '#fa719fff'},
-    { color: '#74c7e0ff'},
-    { color: '#fdb96cff'},
-    { color: '#ce74e0ff'}
-    ];
-
+  mapNotes(recoverNote: RecoverNote, index: number): Note {
     let top = recoverNote.positionY || 0;
     let left = recoverNote.positionX || 0;
     let colorNote = recoverNote.category?.color || "0";
@@ -64,10 +71,10 @@ export class BoardComponent {
       left = 200 * (index % 5);
     }
     if(colorNote === "0"){
-      colorNote = colorNotes[Math.floor(Math.random() * colorNotes.length)].color
+      colorNote = this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)]
     }
     
-    return{
+    return {
       ...recoverNote,
       color: colorNote,
       top: top,
@@ -77,7 +84,7 @@ export class BoardComponent {
     }
   }
 
-  getNotes(){
+  getNotes() {
     this.noteService.getAllNotes().subscribe({
       next: (response) => {
           if(response) {
@@ -95,35 +102,18 @@ export class BoardComponent {
     note.active = true;
   }
 
-  // saveNote(note: Note) {
-  //   if (!note.content || note.content.trim() === '') {
-  //     alert('El contenido de la nota no puede estar vacío');
-  //     return;
-  //   }
-
-  //   const noteToSave = {
-  //     content: note.content.trim(),
-  //     color: note.color,
-  //     positionX: note.left, 
-  //     positionY: note.top 
-  //   };
-
-  //   this.noteService.createNote(note).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         note.idNote = response.note.idNote; 
-  //         this.savedNotes.push(response.note);
-  //         note['saved'] = true;
-  //         alert('Nota guardada correctamente');
-  //       } else {
-  //         alert('Error: ' + response.message);
-  //       }
-  //     },
-  //     error: (err) => {
-  //       alert('Error al guardar la nota: ' + err.message);
-  //     }
-  //   });
-  // }
+  addNewNote() {
+    const newNote: Note = {
+      color: this.colorNotes[Math.floor(Math.random() * this.colorNotes.length)],
+      top: Math.random() * 300,
+      left: Math.random() * 500,
+      content: 'Nueva nota...',
+      saved: false,
+      active: false
+    };
+    
+    this.notes.push(newNote);
+  }
 
   updateNote(note: Note){
     if(note.idNote){
@@ -165,7 +155,7 @@ export class BoardComponent {
           const noteIndex = this.notes.findIndex(n => n.idNote === note.idNote);
           if (noteIndex !== -1) this.notes.splice(noteIndex, 1);
 
-          alert('Nota eliminada correctamente');
+          //alert('Nota eliminada correctamente');
         } else {
           alert('Error: ' + response.message);
         }
@@ -176,12 +166,46 @@ export class BoardComponent {
     });
   }
 
-onDragEnd(event: any, board: HTMLElement) {
+  onDragStarted(note: Note){
+    this.lastDragPosition = { note, top: note.top!, left: note.left! };
+  }
+
+  onDragMoved(event: any, note:Note, trash: HTMLElement){
+    const noteEl = event.source.element.nativeElement;
+    const noteRect = noteEl.getBoundingClientRect();
+    const trashRect = trash.getBoundingClientRect();
+
+    // Verificar si la nota se soltó dentro del área del basurero
+    const isInsideTrash =
+      noteRect.left < trashRect.right &&
+      noteRect.right > trashRect.left &&
+      noteRect.top < trashRect.bottom &&
+      noteRect.bottom > trashRect.top;
+
+    if (isInsideTrash) {
+      // abrir basurero y guardar nota pendiente
+      this.trashOpen = true;
+      this.pendingNote = note;
+    }
+    else{
+      this.trashOpen = false;
+    }
+  }
+
+  onDragEnd(event: any, board: HTMLElement, trash: HTMLElement) {
+  this.isDragging = false;
+  this.isDraggingOverTrash = false;
   const { x, y } = event.source.getFreeDragPosition();
   const note = event.source.element.nativeElement;
   const boardRect = board.getBoundingClientRect();
   const noteRect = note.getBoundingClientRect();
+  const trashRect = trash.getBoundingClientRect();
   const noteSelect:Note = event.source.data;
+  const isInsideTrash =
+      noteRect.left < trashRect.right &&
+      noteRect.right > trashRect.left &&
+      noteRect.top < trashRect.bottom &&
+      noteRect.bottom > trashRect.top;
 
   // Verifica si salió del tablero
   const isOut =
@@ -191,8 +215,16 @@ onDragEnd(event: any, board: HTMLElement) {
     noteRect.bottom > boardRect.bottom;
 
     console.log(isOut);
-    console.log("left", x);
-    console.log("top", y);
+    if (isInsideTrash) {
+      // abrir basurero y guardar nota pendiente
+      this.trashOpen = true;
+      this.pendingNote = note;
+
+      //abrir cuadro de dialogo
+      event.source.reset();
+      this.openDeleteConfirm(noteSelect);
+      return;
+    }
   if (isOut) {
   // Resetea a posición inicial
     event.source.reset();
@@ -204,5 +236,26 @@ onDragEnd(event: any, board: HTMLElement) {
     this.updateNote(noteSelect);
   }
 }
+
+openDeleteConfirm(note: Note) {
+    this.noteToDelete = note;
+    this.confirmDeleteOpen = true;
+
+    console.log('Modal abierto'); // <-- prueba de depuración
+  }
+
+  closeDeleteConfirm(cancelled: boolean = false) {
+    this.confirmDeleteOpen = false;
+    this.noteToDelete = null;
+    this.lastDragPosition = null;
+    this.trashOpen = false; // cerrar el basurero siempre
+  }
+
+  confirmDelete() {
+    if (this.noteToDelete) {
+      this.deleteNote(this.noteToDelete);
+    }
+    this.closeDeleteConfirm();
+  }
 
 }

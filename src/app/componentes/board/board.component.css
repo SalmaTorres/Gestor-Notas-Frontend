@@ -20,21 +20,112 @@
 }
 
 .note.active {
-  z-index: 1000;
+  z-index: 2;
 }
 
-.note textarea {
+.note textarea { 
+  width: 100%; 
+  height: 80%; 
+  border: none; 
+  background: transparent; 
+  resize: none; 
+  outline: none; 
+  font-size: 14px; 
+  line-height: 1.4; 
+} 
+
+button{ 
+  border-radius: 5px; 
+  font-size: 12px; 
+} 
+
+.trash {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 120px;
+  height: 120px;
+}
+
+.trash-image {
   width: 100%;
-  height: 80%;
-  border: none;
-  background: transparent;
-  resize: none;
-  outline: none;
-  font-size: 14px;
-  line-height: 1.4;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none; /* deja pasar los eventos al drag */
 }
 
-button{
-  border-radius: 5px;
-  font-size: 12px;
+/* Reutilizamos backdrop y modal del modal de categorías */
+.backdrop { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0,0,0,.4); 
+  backdrop-filter: blur(4px);
+  z-index: 100;
+}
+
+.modal {
+  position: fixed; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%);
+  background: #fff; 
+  padding: 28px; 
+  border-radius: 16px;
+  width: 380px; 
+  display: grid; 
+  gap: 16px; 
+  z-index: 101;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: modalAppear 0.3s ease-out;
+}
+
+.modal h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.5rem;
+  color: #2d3436;
+  font-weight: 600;
+}
+
+.modal-text {
+  font-size: 0.95rem;
+  color: #636e72;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.actions { 
+  display: flex; 
+  gap: 12px; 
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.actions button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actions button:first-child {
+  background: transparent;
+  color: #636e72;
+  border: 1px solid #ddd;
+}
+
+.actions button:first-child:hover {
+  background: #f8f9fa;
+}
+
+/* Botón rojo para eliminar */
+.actions button.danger {
+  background: linear-gradient(135deg, #e84118 0%, #ff6b6b 100%);
+  color: white;
+  border: none;
+}
+
+.actions button.danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(232, 65, 24, 0.3);
 }
