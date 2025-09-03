@@ -15,6 +15,7 @@ export class SidebarComponent implements OnInit {
   categories: Category[] = [];
 
   @Output() noteCreated = new EventEmitter<Category>();
+  @Output() categoryCreated = new EventEmitter<Category>();
 
   modalOpen = false;
   loading = false;
@@ -68,9 +69,18 @@ export class SidebarComponent implements OnInit {
     this.noteService.createCategory(payload).subscribe({
       next: (saved) => {
         this.categories = [saved, ...this.categories.filter(c => c.categoryId !== saved.categoryId)];
+        
+        this.categoryCreated.emit(saved);
+
         this.form = { categoryId: '', color: '#FFD966' };
         this.modalOpen = false;
         this.loading = false;
+
+        document.body.classList.remove('modal-open');
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       },
       error: (err) => {
         this.errorMsg = this.parseError(err);

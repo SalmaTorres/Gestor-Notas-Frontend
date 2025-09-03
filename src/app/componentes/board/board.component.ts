@@ -59,6 +59,24 @@ export class BoardComponent {
     });
   }
 
+  addNewCategory(category: Category): void {
+    const existingIndex = this.categories.findIndex(c => c.categoryId === category.categoryId);
+    if (existingIndex !== -1) {
+      this.categories[existingIndex] = category;
+    } else {
+      this.categories = [category, ...this.categories];
+    }
+  }
+
+  setSelectedCategory(categoryId: string): void {
+    this.selectedCategory = categoryId;
+    this.applyFilters();
+  }
+
+  refreshNotes(): void {
+    this.getNotes();
+  }
+
   private parseError(err: any): string {
     if (err?.error?.message) return err.error.message;
     if (err?.status === 0)   return 'No se pudo conectar con el backend.';
@@ -70,8 +88,7 @@ export class BoardComponent {
     let top = recoverNote.positionY || 0;
     let left = recoverNote.positionX || 0;
     
-    // Obtener el color de la categoría
-    let noteColor = '#ffff99'; // Color por defecto si no hay categoría
+    let noteColor = '#ffff99'; 
     if (recoverNote.category?.categoryId) {
       const category = this.categories.find(cat => cat.categoryId === recoverNote.category?.categoryId);
       noteColor = category?.color || recoverNote.category.color || '#ffff99';

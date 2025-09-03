@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { SidebarComponent } from './componentes/sidebar/sidebar.component';
 import { BoardComponent } from './componentes/board/board.component';
 import { CommonModule } from '@angular/common';
@@ -12,7 +12,7 @@ interface BoardNote {
   left: number;
   content: string;
   saved?: boolean;
-  category?: Category; // para mostrar en UI si el back lo devuelve
+  category?: Category; 
 }
 
 @Component({
@@ -24,12 +24,27 @@ interface BoardNote {
 export class AppComponent {
   title = 'notas';
   createdNotes: BoardNote[] = [];
+  categories: Category[] = [];
+  selectedCategoryForBoard: string = '';
 
   showNoteModal = false;
   currentNote: BoardNote | null = null;
   selectedCategory: Category | null = null;
 
-  constructor(private noteService: NoteService) {}
+  constructor(private noteService: NoteService) {
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.noteService.getAllCategories().subscribe({
+      next: (cats) => { 
+        this.categories = cats || []; 
+      },
+      error: (err) => { 
+        console.error('Error loading categories:', err);
+      }
+    });
+  }
 
   onNoteCreated(cat: Category) {
     this.selectedCategory = cat;
@@ -43,6 +58,15 @@ export class AppComponent {
     this.showNoteModal = true;
   }
 
+  onCategoryCreated(category: Category) {
+    const existingIndex = this.categories.findIndex((c: Category) => c.categoryId === category.categoryId);
+    if (existingIndex !== -1) {
+      this.categories[existingIndex] = category;
+    } else {
+      this.categories = [category, ...this.categories];
+    }
+  }
+
   saveCurrentNote() {
     if (!this.currentNote || !this.selectedCategory) return;
 
@@ -52,7 +76,7 @@ export class AppComponent {
       return;
     }
 
-    this.currentNote.top = Math.floor(Math.random() * 500);
+    this.currentNote.top = 50 + Math.floor(Math.random() * 500);
     this.currentNote.left = 300 + Math.floor(Math.random() * 700);
 
     const payload = {
@@ -74,6 +98,9 @@ export class AppComponent {
           this.currentNote!.category = res.note?.category || this.selectedCategory;
 
           this.createdNotes.push({ ...this.currentNote! });
+
+          this.selectedCategoryForBoard = this.selectedCategory!.categoryId;
+          
           alert('Nota guardada correctamente');
           this.closeModal();
         } else {
