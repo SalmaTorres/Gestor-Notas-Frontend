@@ -2,16 +2,9 @@
    font-family: Arial;
 }
 
-main{
-  max-height: 100vh;
-  width: auto;
-  overflow-y: hidden;
-}
-
 .board {
   height: 100%;
   width: 100%;
-  background-color: #dfe0e0;
   position: relative;
 
 }

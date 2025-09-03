@@ -1,5 +1,4 @@
-<main>
-  <div class="search-container">
+<div class="search-container">
     <div class="dropdown">
       <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
         <option value="">Todas</option>
@@ -17,7 +16,7 @@
     </div>
   </div>
 <div class="board" #board>
-  <div *ngFor="let note of notes"
+  <div *ngFor="let note of filteredNotes" 
        cdkDrag
        [cdkDragData]="note"
        (cdkDragStarted)="onDragStarted(note)"
@@ -31,9 +30,6 @@
          'top.px': note.top,
          'left.px': note.left
        }">
-    <div class="note-category" *ngIf="$any(note)?.categoryId">
-      {{ $any(note)?.categoryId }}
-    </div>
     <textarea [(ngModel)]="note.content"></textarea>
     <button id="update" *ngIf="isNoteSaved(note)" (click)="updateNote(note)">Editar</button>
   </div>
