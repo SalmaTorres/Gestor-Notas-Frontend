@@ -44,6 +44,7 @@ export class BoardComponent {
   categories: Category[] = [];
 
   errorMsg = '';
+
   isDraggingOverTrash: boolean = false;
   isDragging: boolean = false;
   confirmDeleteOpen = false;
@@ -73,6 +74,20 @@ export class BoardComponent {
         this.errorMsg = this.parseError(err); 
       }
     });
+  }
+
+  addNewCategory(category: Category): void {
+    const existingIndex = this.categories.findIndex(c => c.categoryId === category.categoryId);
+    if (existingIndex !== -1) {
+      this.categories[existingIndex] = category;
+    } else {
+      this.categories = [category, ...this.categories];
+    }
+  }
+
+  setSelectedCategory(categoryId: string): void {
+    this.selectedCategory = categoryId;
+    this.applyFilters();
   }
 
   refreshNotes(): void {
@@ -145,11 +160,14 @@ export class BoardComponent {
 
   updateNote(note: Note){
     if(note.idNote){
-      const { idNote, content, top, left } = note;
-      const cleanNote: RecoverNote = { content:content, positionX:left, positionY:top };
+      const { idNote, content } = note;
+      const cleanNote: RecoverNote = { content };
       this.noteService.updateNote(idNote, cleanNote).subscribe({
         next:(response) => {
-            if(!response){
+            if(response){
+              alert("Nota actualizada correctamente");
+            }
+            else{
               alert("Error al actualizar la nota");
             }
         },
@@ -179,6 +197,7 @@ export class BoardComponent {
 
           const noteIndex = this.notes.findIndex(n => n.idNote === note.idNote);
           if (noteIndex !== -1) this.notes.splice(noteIndex, 1);
+           this.applyFilters(); 
         } else {
           alert('Error: ' + response.message);
         }
@@ -202,6 +221,9 @@ export class BoardComponent {
       
       return matchesCategory && matchesSearch;
     });
+    this.errorMsg = this.filteredNotes.length === 0 
+      ? 'No hay notas que coincidan con los filtros.' 
+      : '';
   }
 
   onCategoryChange() {

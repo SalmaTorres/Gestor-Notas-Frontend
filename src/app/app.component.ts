@@ -32,6 +32,8 @@ export class AppComponent {
   currentNote: BoardNote | null = null;
   selectedCategory: Category | null = null;
 
+  @ViewChild(BoardComponent) boardComponent!: BoardComponent;
+
   constructor(private noteService: NoteService) {
     this.loadCategories();
   }
@@ -61,11 +63,8 @@ export class AppComponent {
   }
 
   onCategoryCreated(category: Category) {
-    const existingIndex = this.categories.findIndex((c: Category) => c.categoryId === category.categoryId);
-    if (existingIndex !== -1) {
-      this.categories[existingIndex] = category;
-    } else {
-      this.categories = [category, ...this.categories];
+    if (this.boardComponent) {
+      this.boardComponent.addNewCategory(category);
     }
   }
 
@@ -78,7 +77,7 @@ export class AppComponent {
       return;
     }
 
-    this.currentNote.top = 50 + Math.floor(Math.random() * 500);
+    this.currentNote.top = Math.floor(Math.random() * 500);
     this.currentNote.left = 300 + Math.floor(Math.random() * 700);
 
     const payload = {
@@ -100,8 +99,12 @@ export class AppComponent {
           this.currentNote!.category = res.note?.category || this.selectedCategory;
 
           this.createdNotes.push({ ...this.currentNote! });
-
-          this.selectedCategoryForBoard = this.selectedCategory!.categoryId;
+          
+          // Actualizar el board con la nueva nota y cambiar el filtro de categoría
+          if (this.boardComponent) {
+            this.boardComponent.refreshNotes();
+            this.boardComponent.setSelectedCategory(this.selectedCategory!.categoryId);
+          }
           
           alert('Nota guardada correctamente');
           this.closeModal();
@@ -114,7 +117,7 @@ export class AppComponent {
       }
     });
   }
-
+  
   onModalClosed() { this.closeModal(); }
 
   private closeModal() {

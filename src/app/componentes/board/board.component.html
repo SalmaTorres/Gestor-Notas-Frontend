@@ -16,6 +16,7 @@
     </div>
   </div>
 <div class="board" #board>
+  <p *ngIf="errorMsg " class="no-notes-message">{{ errorMsg  }}</p>
   <div *ngFor="let note of filteredNotes" 
        cdkDrag
        [cdkDragData]="note"
